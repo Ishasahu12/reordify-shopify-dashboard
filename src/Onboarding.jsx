@@ -758,11 +758,147 @@ function ProfileSetupScreen({ storeInfo, onComplete }) {
 }
 
 /* ─────────────────────────────────────────────
+   PRICING MODAL — Appears after dashboard load
+   ───────────────────────────────────────────── */
+function PricingModal({ onSelectPlan, onDismiss }) {
+  const plans = [
+    {
+      key: 'basic',
+      label: 'Basic',
+      price: 'Free',
+      highlight: false,
+      features: [
+        'Limited insights',
+        'Up to 100 SKUs',
+        'Basic recommendations',
+      ],
+      cta: 'Start free',
+    },
+    {
+      key: 'pro',
+      label: 'Pro',
+      price: '$29/mo',
+      highlight: true,
+      badge: 'Recommended',
+      features: [
+        'Full forecasting',
+        'Unlimited SKUs',
+        'Advanced insights',
+        'Priority support',
+      ],
+      cta: 'Upgrade now',
+    },
+  ];
+
+  return (
+    <div
+      className="fixed inset-0 z-[70] flex items-center justify-center p-4"
+      style={{ background: 'rgba(18,21,31,0.32)', backdropFilter: 'blur(8px)' }}
+      onClick={(e) => { if (e.target === e.currentTarget) onDismiss(); }}
+    >
+      <div
+        className="view-panel w-full max-w-[480px] rounded-[28px] border border-[var(--color-line)] bg-white p-8 shadow-[0_30px_90px_rgba(18,21,31,0.18)]"
+        style={{ animation: 'viewIn 300ms var(--ease-out) forwards' }}
+      >
+        {/* Header */}
+        <div className="mb-6 text-center">
+          <h2
+            className="font-display text-2xl font-[700] tracking-[-0.04em] text-[var(--color-text)]"
+            style={{ fontFamily: T.fontDisplay }}
+          >
+            Unlock full control
+          </h2>
+          <p className="mt-2 text-sm text-[var(--color-muted)]">
+            Start using Reordify with your store data
+          </p>
+        </div>
+
+        {/* Plan cards */}
+        <div className="mb-6 grid grid-cols-2 gap-4">
+          {plans.map((plan) => (
+            <div
+              key={plan.key}
+              className={`rounded-[22px] border p-5 text-sm transition-all ${
+                plan.highlight
+                  ? 'rounded-[22px] border-2 p-5'
+                  : ''
+              }`}
+              style={{
+                borderColor: plan.highlight ? T.accent : T.line,
+                background: plan.highlight ? T.accentSoft : T.white,
+                boxShadow: plan.highlight ? '0 14px 40px rgba(7,213,104,0.12)' : 'none',
+              }}
+            >
+              {plan.badge && (
+                <div
+                  className="mb-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold"
+                  style={{ background: T.accent, color: T.accentDark }}
+                >
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  {plan.badge}
+                </div>
+              )}
+
+              <div
+                className="font-display text-2xl font-[700] tracking-[-0.04em]"
+                style={{ fontFamily: T.fontDisplay, color: plan.highlight ? T.accent : T.text }}
+              >
+                {plan.label}
+              </div>
+
+              <div
+                className="mt-1 font-display text-xl font-[700] tracking-[-0.04em]"
+                style={{ fontFamily: T.fontDisplay, color: T.text }}
+              >
+                {plan.price}
+              </div>
+
+              <ul className="mt-4 space-y-2">
+                {plan.features.map((f) => (
+                  <li key={f} className="flex items-start gap-2 text-sm text-[var(--color-muted)]">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={T.accent} strokeWidth="2.5" className="mt-0.5 shrink-0">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+
+              <button
+                onClick={() => onSelectPlan(plan.key)}
+                className={`hover-lift focus-ring mt-5 w-full rounded-full py-3 text-sm font-semibold transition-all ${
+                  plan.highlight
+                    ? 'bg-[var(--color-accent)] text-[#062912] shadow-[0_14px_30px_rgba(7,213,104,0.28)]'
+                    : 'border border-[var(--color-line)] text-[var(--color-text)]'
+                }`}
+              >
+                {plan.cta}
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* Dismiss */}
+        <button
+          onClick={onDismiss}
+          className="w-full text-center text-sm text-[var(--color-muted)] transition-colors hover:text-[var(--color-text)]"
+        >
+          Continue with limited access
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────
    ROOT ONBOARDING FLOW
    ───────────────────────────────────────────── */
 export default function OnboardingFlow() {
   const [step, setStep] = useState('entry'); // entry | connecting | loading | dashboard | profile
   const [storeData, setStoreData] = useState(null);
+  const [showPricing, setShowPricing] = useState(false);
 
   const mockStoreData = {
     storeName: 'BluePeak Apparel',
@@ -797,6 +933,7 @@ export default function OnboardingFlow() {
   const handleLoadingComplete = () => {
     setStoreData(mockStoreData);
     setStep('dashboard');
+    setTimeout(() => setShowPricing(true), 800);
   };
 
   const handleProfileSetup = () => {
@@ -805,6 +942,15 @@ export default function OnboardingFlow() {
 
   const handleProfileComplete = () => {
     setStep('dashboard');
+  };
+
+  const handleSelectPlan = (plan) => {
+    setShowPricing(false);
+    // In production: navigate to signup/payment for the selected plan
+  };
+
+  const handleDismissPricing = () => {
+    setShowPricing(false);
   };
 
   return (
@@ -829,6 +975,11 @@ export default function OnboardingFlow() {
           storeInfo={{ storeName: 'BluePeak Apparel', currency: 'USD', timezone: 'America/New_York' }}
           onComplete={handleProfileComplete}
         />
+      )}
+
+      {/* Pricing modal */}
+      {showPricing && (
+        <PricingModal onSelectPlan={handleSelectPlan} onDismiss={handleDismissPricing} />
       )}
 
       {/* Background decorative elements */}
