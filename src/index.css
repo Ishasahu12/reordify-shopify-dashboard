@@ -1,0 +1,133 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg: #ffffff;
+  --color-surface: rgba(255,255,255,0.82);
+  --color-surface-strong: #ffffff;
+  --color-text: #12151f;
+  --color-muted: #5f6678;
+  --color-line: rgba(18,21,31,0.08);
+  --color-accent: #07D568;
+  --color-accent-soft: rgba(7,213,104,0.10);
+  --color-purple-soft: rgba(140,102,255,0.12);
+  --color-alert: #e5484d;
+  --color-alert-soft: rgba(229,72,77,0.12);
+  --radius-base: 18px;
+  --radius-lg: 28px;
+  --shadow-soft: 0 20px 60px rgba(23,28,45,0.08);
+  --shadow-lift: 0 26px 70px rgba(23,28,45,0.12);
+  --font-display: 'Poppins', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --space-unit: 1rem;
+  --ease-out: cubic-bezier(.22,1,.36,1);
+}
+
+html { scroll-behavior: smooth; }
+html, body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+}
+
+.glass {
+  background: rgba(255,255,255,0.74);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(18,21,31,0.08);
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 700ms var(--ease-out), transform 700ms var(--ease-out);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hover-lift {
+  transition: transform 120ms var(--ease-out), background-color 120ms, box-shadow 160ms;
+}
+.hover-lift:hover { transform: translateY(-2px); box-shadow: var(--shadow-lift); }
+.hover-lift:active { transform: scale(0.97); }
+
+.focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(7,213,104,0.18), 0 0 0 5px rgba(7,213,104,0.34);
+}
+
+.decision-pulse { animation: pulseAlert 2.4s ease-in-out infinite; }
+.count-up { font-variant-numeric: tabular-nums; }
+
+.view-panel {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: viewIn 240ms var(--ease-out) forwards;
+}
+
+.tooltip {
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+.tooltip-wrap:hover .tooltip {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 160ms;
+}
+
+.toast {
+  transform: translateY(24px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms ease, transform 220ms var(--ease-out);
+}
+.toast.show {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.progress-bar {
+  transform-origin: left center;
+  transition: transform 180ms linear;
+}
+
+@keyframes pulseAlert {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(229,72,77,0.10); }
+  50% { box-shadow: 0 0 0 12px rgba(229,72,77,0); }
+}
+@keyframes floatCard {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes shimmer {
+  0% { background-position: 120% 0; }
+  100% { background-position: -120% 0; }
+}
+@keyframes viewIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.hero-float { animation: floatCard 6.8s ease-in-out infinite; }
+
+.shimmer {
+  background: linear-gradient(90deg, rgba(18,21,31,0.04) 20%, rgba(7,213,104,0.12) 50%, rgba(18,21,31,0.04) 80%);
+  background-size: 220% 100%;
+  animation: shimmer 2.2s linear infinite;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
