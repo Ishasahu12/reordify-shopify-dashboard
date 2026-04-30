@@ -758,80 +758,123 @@ function ProfileSetupScreen({ storeInfo, onComplete }) {
 }
 
 /* ─────────────────────────────────────────────
-   PRICING MODAL — Appears after dashboard load
+   PRICING MODAL — Value-driven upgrade moment
+   Appears 2-3s after dashboard loads OR on first interaction
    ───────────────────────────────────────────── */
-function PricingModal({ onSelectPlan, onDismiss }) {
+function PricingModal({ storeData, onSelectPlan, onDismiss }) {
+  const { atRisk, reorderSuggestions, totalSKUs } = storeData;
+
+  const totalAtRisk = atRisk;
+  const urgentCount = reorderSuggestions?.length || 0;
+  const topRisk = reorderSuggestions?.[0];
+  const revenueAtRisk = topRisk?.atRisk || '$0';
+
+  const insights = [
+    urgentCount > 0 && `${urgentCount} products need immediate attention`,
+    totalAtRisk > 0 && `${totalAtRisk} items at risk of stockout`,
+    topRisk && `You could lose ${revenueAtRisk} in the next 7 days`,
+  ].filter(Boolean);
+
   const plans = [
     {
-      key: 'basic',
-      label: 'Basic',
-      price: 'Free',
+      key: 'free',
+      label: 'Free',
+      price: '$0',
+      period: 'forever',
       highlight: false,
       features: [
         'Limited insights',
         'Up to 100 SKUs',
-        'Basic recommendations',
+        'Basic alerts',
+        'Manual updates',
       ],
-      cta: 'Start free',
+      cta: 'Continue with free',
+      ctaSecondary: null,
     },
     {
       key: 'pro',
       label: 'Pro',
-      price: '$29/mo',
+      price: '$29',
+      period: '/month',
       highlight: true,
       badge: 'Recommended',
       features: [
-        'Full forecasting',
+        'Full demand forecasting',
+        'Smart reorder suggestions',
         'Unlimited SKUs',
-        'Advanced insights',
-        'Priority support',
+        'Real-time updates',
+        'Priority insights',
       ],
-      cta: 'Upgrade now',
+      cta: 'Upgrade to Pro',
+      ctaSecondary: 'Upgrade in seconds. Cancel anytime.',
     },
   ];
 
   return (
     <div
       className="fixed inset-0 z-[70] flex items-center justify-center p-4"
-      style={{ background: 'rgba(18,21,31,0.32)', backdropFilter: 'blur(8px)' }}
+      style={{ background: 'rgba(18,21,31,0.28)', backdropFilter: 'blur(6px)' }}
       onClick={(e) => { if (e.target === e.currentTarget) onDismiss(); }}
     >
       <div
-        className="view-panel w-full max-w-[480px] rounded-[28px] border border-[var(--color-line)] bg-white p-8 shadow-[0_30px_90px_rgba(18,21,31,0.18)]"
-        style={{ animation: 'viewIn 300ms var(--ease-out) forwards' }}
+        className="view-panel w-full max-w-[520px] overflow-y-auto rounded-[28px] border border-[var(--color-line)] bg-white shadow-[0_36px_100px_rgba(18,21,31,0.20)]"
+        style={{ animation: 'viewIn 350ms var(--ease-out) forwards', maxHeight: '90vh' }}
       >
         {/* Header */}
-        <div className="mb-6 text-center">
+        <div className="px-8 pt-8 pb-0 text-center">
           <h2
-            className="font-display text-2xl font-[700] tracking-[-0.04em] text-[var(--color-text)]"
+            className="font-display text-[1.75rem] font-[700] tracking-[-0.04em] text-[var(--color-text)]"
             style={{ fontFamily: T.fontDisplay }}
           >
-            Unlock full control
+            Start making smarter inventory decisions
           </h2>
-          <p className="mt-2 text-sm text-[var(--color-muted)]">
-            Start using Reordify with your store data
+          <p className="mt-3 text-sm leading-relaxed text-[var(--color-muted)]">
+            You're already seeing your store data. Unlock full control to take action.
           </p>
         </div>
 
+        {/* Value reinforcement — real insights from THEIR data */}
+        {insights.length > 0 && (
+          <div className="mx-8 mt-6 rounded-[20px] border border-[rgba(229,72,77,0.15)] bg-[linear-gradient(180deg,#fff_0%,#fff7f7_100%)] p-5">
+            <div className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--color-alert)]">
+              What we found in your store
+            </div>
+            <div className="space-y-2">
+              {insights.map((insight, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div
+                    className="flex h-6 w-6 items-center justify-center rounded-full"
+                    style={{ background: T.alertSoft }}
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={T.alert} strokeWidth="2.5">
+                      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                      <line x1="12" y1="9" x2="12" y2="13" />
+                      <line x1="12" y1="17" x2="12.01" y2="17" />
+                    </svg>
+                  </div>
+                  <span className="text-sm font-medium text-[var(--color-text)]">{insight}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Plan cards */}
-        <div className="mb-6 grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4 px-8 py-6">
           {plans.map((plan) => (
             <div
               key={plan.key}
-              className={`rounded-[22px] border p-5 text-sm transition-all ${
-                plan.highlight
-                  ? 'rounded-[22px] border-2 p-5'
-                  : ''
-              }`}
+              className="relative rounded-[22px] border p-5 text-sm transition-all"
               style={{
                 borderColor: plan.highlight ? T.accent : T.line,
                 background: plan.highlight ? T.accentSoft : T.white,
-                boxShadow: plan.highlight ? '0 14px 40px rgba(7,213,104,0.12)' : 'none',
+                boxShadow: plan.highlight ? '0 16px 48px rgba(7,213,104,0.15), 0 0 0 1px rgba(7,213,104,0.12)' : 'none',
               }}
             >
+              {/* Badge */}
               {plan.badge && (
                 <div
-                  className="mb-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold"
+                  className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold"
                   style={{ background: T.accent, color: T.accentDark }}
                 >
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
@@ -841,24 +884,30 @@ function PricingModal({ onSelectPlan, onDismiss }) {
                 </div>
               )}
 
+              {/* Plan name */}
               <div
-                className="font-display text-2xl font-[700] tracking-[-0.04em]"
+                className="font-display text-xl font-[700] tracking-[-0.04em]"
                 style={{ fontFamily: T.fontDisplay, color: plan.highlight ? T.accent : T.text }}
               >
                 {plan.label}
               </div>
 
-              <div
-                className="mt-1 font-display text-xl font-[700] tracking-[-0.04em]"
-                style={{ fontFamily: T.fontDisplay, color: T.text }}
-              >
-                {plan.price}
+              {/* Price */}
+              <div className="mt-1 flex items-baseline gap-1">
+                <span
+                  className="font-display text-3xl font-[700] tracking-[-0.05em]"
+                  style={{ fontFamily: T.fontDisplay, color: T.text }}
+                >
+                  {plan.price}
+                </span>
+                <span className="text-sm text-[var(--color-muted)]">{plan.period}</span>
               </div>
 
-              <ul className="mt-4 space-y-2">
+              {/* Features */}
+              <ul className="mt-4 space-y-2.5">
                 {plan.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-sm text-[var(--color-muted)]">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={T.accent} strokeWidth="2.5" className="mt-0.5 shrink-0">
+                  <li key={f} className="flex items-start gap-2.5 text-sm text-[var(--color-muted)]">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={plan.highlight ? T.accent : T.muted} strokeWidth="2.5" className="mt-0.5 shrink-0">
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
                     {f}
@@ -866,27 +915,40 @@ function PricingModal({ onSelectPlan, onDismiss }) {
                 ))}
               </ul>
 
+              {/* CTA */}
               <button
                 onClick={() => onSelectPlan(plan.key)}
-                className={`hover-lift focus-ring mt-5 w-full rounded-full py-3 text-sm font-semibold transition-all ${
+                className={`hover-lift focus-ring mt-5 w-full rounded-full py-3.5 text-sm font-semibold transition-all ${
                   plan.highlight
-                    ? 'bg-[var(--color-accent)] text-[#062912] shadow-[0_14px_30px_rgba(7,213,104,0.28)]'
-                    : 'border border-[var(--color-line)] text-[var(--color-text)]'
+                    ? 'bg-[var(--color-accent)] text-[#062912] shadow-[0_14px_30px_rgba(7,213,104,0.30)]'
+                    : 'border border-[var(--color-line)] text-[var(--color-text)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]'
                 }`}
               >
                 {plan.cta}
               </button>
+
+              {/* Secondary microcopy under Pro CTA */}
+              {plan.ctaSecondary && (
+                <p className="mt-2 text-center text-xs text-[var(--color-muted)]">
+                  {plan.ctaSecondary}
+                </p>
+              )}
             </div>
           ))}
         </div>
 
         {/* Dismiss */}
-        <button
-          onClick={onDismiss}
-          className="w-full text-center text-sm text-[var(--color-muted)] transition-colors hover:text-[var(--color-text)]"
-        >
-          Continue with limited access
-        </button>
+        <div className="px-8 pb-8 text-center">
+          <button
+            onClick={onDismiss}
+            className="text-sm text-[var(--color-muted)] transition-colors hover:text-[var(--color-text)]"
+          >
+            Continue with limited access
+          </button>
+          <p className="mt-2 text-xs text-[var(--color-muted)]">
+            No credit card required. Your data stays accessible.
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -979,7 +1041,7 @@ export default function OnboardingFlow() {
 
       {/* Pricing modal */}
       {showPricing && (
-        <PricingModal onSelectPlan={handleSelectPlan} onDismiss={handleDismissPricing} />
+        <PricingModal storeData={storeData} onSelectPlan={handleSelectPlan} onDismiss={handleDismissPricing} />
       )}
 
       {/* Background decorative elements */}
