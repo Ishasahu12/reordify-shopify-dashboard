@@ -452,33 +452,38 @@ function PremiumDashboard({ storeData }) {
                 ))}
               </div>
             </div>
-            <div className="space-y-0">
-              {productsToShow.map((p, i) => {
-                const ps = productStatusConfig[p.status] || productStatusConfig.hot;
-                return (
-                  <div key={i} className="flex items-center justify-between border-b border-[rgba(18,21,31,0.04)] py-3 last:border-0 hover:bg-[rgba(18,21,31,0.01)] -mx-1 px-1 rounded-lg cursor-pointer transition-colors">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold" style={{ background: 'rgba(18,21,31,0.05)', color: T.muted }}>
-                        {p.name.charAt(0)}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="text-sm font-medium text-[var(--color-text)] truncate">{p.name}</div>
-                        <div className="text-xs text-[var(--color-muted)] truncate">{p.variant}</div>
-                      </div>
+            {/* Table header */}
+            <div className="flex items-center px-1 py-2 border-b border-[var(--color-line)] mb-1">
+              <div className="flex-1 text-[10px] font-semibold uppercase tracking-[0.10em] text-[var(--color-muted)]">Product</div>
+              <div className="w-[60px] text-right text-[10px] font-semibold uppercase tracking-[0.10em] text-[var(--color-muted)]">Sold</div>
+              <div className="w-[75px] text-right text-[10px] font-semibold uppercase tracking-[0.10em] text-[var(--color-muted)]">Revenue</div>
+              <div className="w-[65px] text-right text-[10px] font-semibold uppercase tracking-[0.10em] text-[var(--color-muted)]">Profit</div>
+              <div className="w-[50px] text-center text-[10px] font-semibold uppercase tracking-[0.10em] text-[var(--color-muted)]">Status</div>
+            </div>
+            {productsToShow.map((p, i) => {
+              const ps = productStatusConfig[p.status] || productStatusConfig.hot;
+              return (
+                <div key={i} className="flex items-center border-b border-[rgba(18,21,31,0.04)] py-2.5 last:border-0 hover:bg-[rgba(18,21,31,0.01)] px-1 rounded-lg cursor-pointer transition-colors">
+                  <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold" style={{ background: 'rgba(18,21,31,0.05)', color: T.muted }}>
+                      {p.name.charAt(0)}
                     </div>
-                    <div className="flex items-center gap-4 ml-4">
-                      <div className="text-right hidden sm:block">
-                        <div className="text-xs text-[var(--color-muted)]">{p.sold} sold</div>
-                        <div className="text-xs font-medium" style={{ color: T.accent }}>+${p.profit}</div>
-                      </div>
-                      <span className="rounded-full px-2 py-0.5 text-xs font-medium shrink-0" style={{ background: ps.bg, color: ps.color }}>
-                        {ps.label}
-                      </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs font-medium text-[var(--color-text)] truncate">{p.name}</div>
+                      <div className="text-[10px] text-[var(--color-muted)] truncate">{p.variant}</div>
                     </div>
                   </div>
-                );
-              })}
-            </div>
+                  <div className="w-[60px] text-right text-xs text-[var(--color-muted)]">{p.sold}</div>
+                  <div className="w-[75px] text-right text-xs font-medium text-[var(--color-text)]">{p.revenue}</div>
+                  <div className="w-[65px] text-right text-xs font-semibold" style={{ color: T.accent }}>+${p.profit}</div>
+                  <div className="w-[50px] flex justify-center">
+                    <span className="rounded-full px-1.5 py-0.5 text-[10px] font-medium" style={{ background: ps.bg, color: ps.color }}>
+                      {ps.label}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
           </Card>
 
           {/* RECENT ORDERS TABLE */}
@@ -491,35 +496,41 @@ function PremiumDashboard({ storeData }) {
                 View all →
               </button>
             </div>
-            <div className="space-y-0">
-              {(recentOrders || []).slice(0, 7).map((order, i) => {
-                const s = statusConfig[order.status] || statusConfig.delivered;
-                return (
-                  <div key={i} className="flex items-center justify-between border-b border-[rgba(18,21,31,0.04)] py-3 last:border-0 hover:bg-[rgba(18,21,31,0.01)] -mx-1 px-1 rounded-lg cursor-pointer transition-colors">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold" style={{ background: 'rgba(18,21,31,0.05)', color: T.muted }}>
-                        {(order.product || order.orderId || '#').charAt(0)}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="text-sm font-medium text-[var(--color-text)] truncate">{order.product || order.orderId}</div>
-                        <div className="text-xs text-[var(--color-muted)]">{order.orderId || order.date}</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 ml-4">
-                      <div className="text-right hidden sm:block">
-                        <div className="text-xs font-medium text-[var(--color-text)]">{order.revenue}</div>
-                        <div className="text-xs font-medium" style={{ color: (typeof order.profit === 'number' ? order.profit >= 0 : true) ? T.accent : T.alert }}>
-                          {typeof order.profit === 'number' ? (order.profit >= 0 ? '+' : '') + '$' + order.profit.toFixed(0) : order.profit}
-                        </div>
-                      </div>
-                      <span className="rounded-full px-2 py-0.5 text-xs font-medium shrink-0" style={{ background: s.bg, color: s.color }}>
-                        {s.label}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
+            {/* Table header */}
+            <div className="flex items-center px-1 py-2 border-b border-[var(--color-line)] mb-1">
+              <div className="w-[85px] text-[10px] font-semibold uppercase tracking-[0.10em] text-[var(--color-muted)]">Order ID</div>
+              <div className="flex-1 text-[10px] font-semibold uppercase tracking-[0.10em] text-[var(--color-muted)]">Product</div>
+              <div className="w-[70px] text-right text-[10px] font-semibold uppercase tracking-[0.10em] text-[var(--color-muted)]">Revenue</div>
+              <div className="w-[60px] text-right text-[10px] font-semibold uppercase tracking-[0.10em] text-[var(--color-muted)]">Profit</div>
+              <div className="w-[75px] text-center text-[10px] font-semibold uppercase tracking-[0.10em] text-[var(--color-muted)]">Status</div>
+              <div className="w-[75px] text-right text-[10px] font-semibold uppercase tracking-[0.10em] text-[var(--color-muted)]">Stock</div>
+              <div className="w-[55px] text-right text-[10px] font-semibold uppercase tracking-[0.10em] text-[var(--color-muted)]">Date</div>
             </div>
+            {(recentOrders || []).slice(0, 8).map((order, i) => {
+              const s = statusConfig[order.status] || statusConfig.delivered;
+              return (
+                <div key={i} className="flex items-center border-b border-[rgba(18,21,31,0.04)] py-2 last:border-0 hover:bg-[rgba(18,21,31,0.01)] px-1 rounded-lg cursor-pointer transition-colors">
+                  <div className="w-[85px] text-[11px] font-mono text-[var(--color-muted)]">{order.orderId}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-medium text-[var(--color-text)] truncate">{order.product}</div>
+                    <div className="text-[10px] text-[var(--color-muted)]">{order.variant}</div>
+                  </div>
+                  <div className="w-[70px] text-right text-xs font-medium text-[var(--color-text)]">{order.revenue}</div>
+                  <div className="w-[60px] text-right text-xs font-semibold" style={{ color: (typeof order.profit === 'number' ? order.profit >= 0 : true) ? T.accent : T.alert }}>
+                    {typeof order.profit === 'number' ? (order.profit >= 0 ? '+' : '') + '$' + order.profit.toFixed(0) : order.profit}
+                  </div>
+                  <div className="w-[75px] flex justify-center">
+                    <span className="rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ background: s.bg, color: s.color }}>
+                      {s.label}
+                    </span>
+                  </div>
+                  <div className="w-[75px] text-right text-[11px] text-[var(--color-muted)]">
+                    {(order.stockRemaining || '—') + (order.stockRemaining ? ' units' : '')}
+                  </div>
+                  <div className="w-[55px] text-right text-[11px] text-[var(--color-muted)]">{order.date}</div>
+                </div>
+              );
+            })}
           </Card>
         </div>
 
