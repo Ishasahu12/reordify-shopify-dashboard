@@ -437,11 +437,11 @@ function LoadingScreen({ onComplete }) {
 }
 
 /* ─────────────────────────────────────────────
-   STEP 4 — FREE TIER DASHBOARD (Redesigned v3)
-   Product-centered orders + inline upgrade panel
+   STEP 4 — FREE TIER DASHBOARD (Redesigned v4)
+   Stock snapshot + rich product orders + blurred insights
    ───────────────────────────────────────────── */
 function FreeDashboard({ storeData, onUpgrade }) {
-  const { storeName, recentOrders, quickInsights } = storeData;
+  const { storeName, recentOrders, stockSnapshot } = storeData;
 
   const navItems = [
     { label: 'Dashboard', icon: '▦', state: 'limited' },
@@ -452,22 +452,11 @@ function FreeDashboard({ storeData, onUpgrade }) {
     { label: 'Settings', icon: '⚙', state: 'locked' },
   ];
 
-  // Compute revenue from orders
-  const totalRevenue = recentOrders.reduce((sum, o) => {
-    const num = parseFloat(o.amount.replace('$', '').replace(',', ''));
-    return sum + num;
-  }, 0);
-  const topProduct = 'Hydration Pack';
-
-  const blurredMetrics = [
-    { label: 'Stock Health', value: '3 at risk', color: T.alert },
-    { label: 'Revenue at risk', value: '$4,320', color: T.alert },
-    { label: 'Avg. sell-through', value: '68%', color: T.accent },
-    { label: 'Units to reorder', value: '340', color: T.text },
-    { label: 'Active POs', value: '2 pending', color: T.muted },
-    { label: 'This week', value: '$12,480', color: T.accent },
-    { label: 'Forecast', value: '+12% demand', color: T.accent },
-    { label: 'Top SKU', value: topProduct, color: T.text },
+  const blurredInsightLines = [
+    { text: 'Reorder Hydration Pack in 3 days', dim: false },
+    { text: 'Suggested quantity: 40 units', dim: false },
+    { text: 'Demand forecast +12% next week', dim: true },
+    { text: 'Stockout risk: medium', dim: true },
   ];
 
   return (
@@ -522,7 +511,7 @@ function FreeDashboard({ storeData, onUpgrade }) {
       {/* ── MAIN CONTENT ── */}
       <main className="flex-1 px-8 py-10">
 
-        {/* ── SECTION 1: STORE HEADER ── */}
+        {/* ── HEADER ── */}
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h2
@@ -545,89 +534,126 @@ function FreeDashboard({ storeData, onUpgrade }) {
           </div>
         </div>
 
-        {/* ── SECTION 2: MINI INSIGHTS STRIP ── */}
+        {/* ── SECTION 1: STOCK SNAPSHOT ── */}
         <div className="mb-6 grid grid-cols-3 gap-4">
           {[
-            { label: 'Orders (last 10)', value: '10', color: T.text, icon: '📦' },
-            { label: 'Revenue', value: `$${totalRevenue.toLocaleString('en-IN', { minimumFractionDigits: 0 })}`, color: T.accent, icon: '💰' },
-            { label: 'Top product', value: topProduct, color: T.text, icon: '⭐' },
+            { label: 'Total units in stock', value: stockSnapshot.total, color: T.text },
+            { label: 'Out of stock', value: stockSnapshot.outOfStock, color: T.alert },
+            { label: 'At risk', value: stockSnapshot.atRisk, color: '#f59e0b' },
           ].map((item) => (
             <div
               key={item.label}
-              className="flex items-center gap-4 rounded-[18px] border border-[var(--color-line)] bg-white px-5 py-4 shadow-sm"
+              className="rounded-[18px] border border-[var(--color-line)] bg-white px-5 py-4 shadow-sm"
             >
-              <span className="text-xl">{item.icon}</span>
-              <div>
-                <div className="font-display text-2xl font-[700] tracking-[-0.04em]" style={{ fontFamily: T.fontDisplay, color: item.color }}>
-                  {item.value}
-                </div>
-                <div className="mt-0.5 text-xs text-[var(--color-muted)]">{item.label}</div>
+              <div
+                className="font-display text-2xl font-[700] tracking-[-0.04em]"
+                style={{ fontFamily: T.fontDisplay, color: item.color }}
+              >
+                {item.value}
               </div>
+              <div className="mt-1 text-xs text-[var(--color-muted)]">{item.label}</div>
             </div>
           ))}
         </div>
 
-        {/* ── SECTION 3: RECENT ORDERS (product-centered) ── */}
+        {/* ── SECTION 2: RECENT ORDERS (rich product data) ── */}
         <div className="mb-6">
-          <h3 className="mb-4 font-display text-base font-[700] tracking-[-0.04em] text-[var(--color-text)]" style={{ fontFamily: T.fontDisplay }}>
+          {/* Micro insight */}
+          <div className="mb-3 flex items-center gap-2 text-xs text-[var(--color-muted)]">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            <span>10 recent orders • <span style={{ color: '#f59e0b' }}>3 products low on stock</span></span>
+          </div>
+
+          <h3 className="mb-3 font-display text-base font-[700] tracking-[-0.04em] text-[var(--color-text)]" style={{ fontFamily: T.fontDisplay }}>
             Recent orders
           </h3>
+
           <div className="overflow-hidden rounded-[20px] border border-[var(--color-line)] bg-white shadow-sm">
             {recentOrders.map((order, i) => (
               <div
                 key={i}
-                className={`flex items-center justify-between border-b border-[rgba(18,21,31,0.04)] px-5 py-4 last:border-0 ${
-                  i === 0 ? 'border-t-0' : ''
-                }`}
+                className={`flex items-start justify-between border-b border-[rgba(18,21,31,0.04)] px-5 py-4 last:border-0 ${i === 0 ? '' : ''}`}
               >
-                <div className="flex items-center gap-4">
-                  {/* Product image placeholder */}
+                {/* Left: product info */}
+                <div className="flex items-start gap-4">
+                  {/* Product initial */}
                   <div
-                    className="flex h-10 w-10 items-center justify-center rounded-xl text-sm font-bold"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold"
                     style={{ background: 'rgba(18,21,31,0.04)', color: T.muted }}
                   >
                     {order.product.charAt(0)}
                   </div>
                   <div>
                     <div className="font-medium text-[var(--color-text)]">{order.product}</div>
-                    <div className="mt-0.5 text-xs text-[var(--color-muted)]">Qty: {order.items}</div>
+                    <div className="mt-1 flex items-center gap-2 text-xs text-[var(--color-muted)]">
+                      <span>{order.variant}</span>
+                      <span>•</span>
+                      <span>{order.qty} units</span>
+                      <span>•</span>
+                      <span>{order.warehouse}</span>
+                    </div>
+                    {/* Status + stock inline */}
+                    <div className="mt-2 flex items-center gap-3">
+                      <span
+                        className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                        style={{ background: order.status === 'Delivered' ? T.accentSoft : 'rgba(18,21,31,0.04)', color: order.status === 'Delivered' ? T.accent : T.muted }}
+                      >
+                        {order.status}
+                      </span>
+                      <span className="text-xs" style={{ color: order.stockLeft <= 5 ? T.alert : order.stockLeft <= 10 ? '#f59e0b' : T.muted }}>
+                        {order.stockLeft} units left
+                      </span>
+                    </div>
                   </div>
                 </div>
+
+                {/* Right: financials */}
                 <div className="text-right">
-                  <div className="font-medium text-[var(--color-text)]">{order.amount}</div>
-                  <div className="mt-0.5 text-xs text-[var(--color-muted)]">{order.date}</div>
+                  <div className="font-medium text-[var(--color-text)]">{order.revenue}</div>
+                  <div className="mt-1 text-xs font-medium" style={{ color: T.accent }}>{order.profit} profit</div>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* ── SECTION 4: LOCKED DASHBOARD PREVIEW ── */}
-        <div className="mb-6 relative overflow-hidden rounded-[24px] border border-[var(--color-line)]" style={{ filter: 'blur(6px)', pointerEvents: 'none' }}>
+        {/* ── SECTION 3: BLURRED INSIGHTS ── */}
+        <div className="mb-6 relative overflow-hidden rounded-[24px] border border-[var(--color-line)]" style={{ filter: 'blur(5px)', pointerEvents: 'none' }}>
           <div className="bg-gradient-to-br from-white to-[rgba(18,21,31,0.02)] p-6">
-            {/* Stats row */}
-            <div className="mb-4 grid grid-cols-4 gap-3">
-              {blurredMetrics.slice(0, 4).map((m, i) => (
-                <div key={i} className="rounded-[16px] border border-[var(--color-line)] bg-white/80 p-4">
-                  <div className="text-xs text-[var(--color-muted)]">{m.label}</div>
-                  <div className="mt-1 font-display text-lg font-[700] tracking-[-0.04em]" style={{ fontFamily: T.fontDisplay, color: m.color }}>{m.value}</div>
-                </div>
+            {/* Simulated chart placeholder */}
+            <div className="mb-4 flex items-end gap-2 px-4">
+              {[40, 55, 45, 70, 60, 80, 75, 90, 85, 95, 88, 100].map((h, i) => (
+                <div
+                  key={i}
+                  className="flex-1 rounded-t-sm"
+                  style={{
+                    height: `${h}%`,
+                    background: i === 11 ? T.accent : 'rgba(18,21,31,0.06)',
+                    opacity: i === 11 ? 1 : 0.5,
+                  }}
+                />
               ))}
             </div>
-            {/* Bottom row */}
-            <div className="grid grid-cols-4 gap-3">
-              {blurredMetrics.slice(4).map((m, i) => (
-                <div key={i} className="rounded-[16px] border border-[var(--color-line)] bg-white/80 p-4">
-                  <div className="text-xs text-[var(--color-muted)]">{m.label}</div>
-                  <div className="mt-1 font-display text-lg font-[700] tracking-[-0.04em]" style={{ fontFamily: T.fontDisplay, color: m.color }}>{m.value}</div>
+            <div className="mt-3 text-xs text-[var(--color-muted)] text-center">Demand forecast — next 30 days</div>
+
+            {/* Blurred insight text */}
+            <div className="mt-6 grid grid-cols-2 gap-4">
+              {blurredInsightLines.map((line, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <div className="h-2 w-2 rounded-full" style={{ background: line.dim ? T.muted : T.accent, opacity: line.dim ? 0.3 : 0.5 }} />
+                  <span className="text-xs" style={{ color: T.muted, opacity: line.dim ? 0.4 : 0.6 }}>{line.text}</span>
                 </div>
               ))}
             </div>
           </div>
-          <div className="absolute inset-0" style={{ background: 'rgba(255,255,255,0.5)' }} />
+          <div className="absolute inset-0" style={{ background: 'rgba(255,255,255,0.45)' }} />
         </div>
 
-        {/* ── SECTION 5: FULL-WIDTH INTEGRATED UPGRADE PANEL ── */}
+        {/* ── SECTION 4: UPGRADE PANEL ── */}
         <div
           className="relative overflow-hidden rounded-[24px] border-2 px-8 py-7"
           style={{
@@ -636,8 +662,8 @@ function FreeDashboard({ storeData, onUpgrade }) {
             boxShadow: `0 16px 60px rgba(7,213,104,0.10)`,
           }}
         >
-          {/* Left: copy + points */}
           <div className="flex items-start justify-between gap-8">
+            {/* Left: copy + points */}
             <div className="flex-1">
               <div className="mb-2 text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: T.accent }}>
                 Upgrade available
@@ -655,9 +681,9 @@ function FreeDashboard({ storeData, onUpgrade }) {
               {/* Value points */}
               <div className="mt-5 grid grid-cols-3 gap-4">
                 {[
-                  'Predict stockouts before they happen',
-                  'Smart reorder recommendations',
-                  'Track profit and performance',
+                  'Predict stockouts',
+                  'Smart reorder suggestions',
+                  'Track profit',
                 ].map((point, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full" style={{ background: T.accentSoft }}>
