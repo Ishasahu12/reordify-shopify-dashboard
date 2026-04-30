@@ -131,3 +131,7 @@ html, body {
 .font-display {
   font-family: var(--font-display);
 }
+
+/* Hidden scrollbar - vertical scroll works but bar is invisible */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

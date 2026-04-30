@@ -1623,7 +1623,9 @@ export default function OnboardingFlow() {
   };
 
   const handleUpgrade = () => {
-    setShowPricing(true);
+    setStoreData(premiumStoreData);
+    setStep('dashboard');
+    setShowPricing(false);
   };
 
   return (
