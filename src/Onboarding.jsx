@@ -437,40 +437,120 @@ function LoadingScreen({ onComplete }) {
 }
 
 /* ─────────────────────────────────────────────
-   STEP 4 — FREE TIER DASHBOARD (Redesigned)
+   STEP 4 — FREE TIER DASHBOARD (Redesigned v2)
+   Sidebar + real data + blurred preview + upgrade overlay
    ───────────────────────────────────────────── */
 function FreeDashboard({ storeData, onUpgrade }) {
   const { storeName, recentOrders, quickInsights } = storeData;
 
   const navItems = [
-    { label: 'Dashboard', icon: '▦', state: 'active' },
-    { label: 'Inventory', icon: '☰', state: 'limited' },
-    { label: 'Reorder', icon: '↻', state: 'limited' },
+    { label: 'Dashboard', icon: '▦', state: 'limited' },
+    { label: 'Inventory', icon: '☰', state: 'locked' },
+    { label: 'Reorder', icon: '↻', state: 'locked' },
     { label: 'Purchase Orders', icon: '📋', state: 'locked' },
     { label: 'Analytics', icon: '◬', state: 'locked' },
     { label: 'Settings', icon: '⚙', state: 'locked' },
   ];
 
-  return (
-    <div className="min-h-screen bg-white">
-      <div className="mx-auto max-w-[760px] px-6 py-10">
+  const blurredDashboardItems = [
+    { label: 'Stock Health', value: '3 at risk', color: T.alert },
+    { label: 'Revenue at risk', value: '$4,320', color: T.alert },
+    { label: 'Avg. sell-through', value: '68%', color: T.accent },
+    { label: 'Units to reorder', value: '340', color: T.text },
+    { label: 'Active POs', value: '2 pending', color: T.muted },
+    { label: 'This week', value: '$12,480', color: T.accent },
+    { label: 'Top SKU', value: 'Hydration Pack', color: T.text },
+    { label: 'Forecast', value: '+12% demand', color: T.accent },
+  ];
 
-        {/* ── SECTION 1: HEADER ── */}
-        <div className="mb-8">
-          <div className="mb-1 text-sm text-[var(--color-muted)]">Your store</div>
-          <h2
-            className="font-display text-2xl font-[700] tracking-[-0.04em] text-[var(--color-text)]"
-            style={{ fontFamily: T.fontDisplay }}
-          >
-            {storeName}
-          </h2>
-          <p className="mt-1 text-sm text-[var(--color-muted)]">
-            Synced 10 recent orders • Updated just now
-          </p>
+  return (
+    <div className="flex min-h-screen bg-white">
+      {/* ── SIDEBAR NAVIGATION ── */}
+      <aside
+        className="sticky top-0 flex h-screen w-56 flex-col border-r border-[var(--color-line)] bg-white px-4 py-8"
+        style={{ width: '220px' }}
+      >
+        {/* Logo */}
+        <div className="mb-8 flex items-center gap-2 px-3">
+          <img src="/logo.jpeg" alt="Reordify" className="h-8 w-auto object-contain" />
         </div>
 
-        {/* ── SECTION 2: QUICK INSIGHTS ── */}
-        <div className="mb-6 grid grid-cols-3 gap-3">
+        {/* Nav items */}
+        <nav className="flex flex-col gap-1">
+          {navItems.map((item) => (
+            <div
+              key={item.label}
+              className={`flex items-center gap-3 rounded-[14px] px-3 py-3 text-sm font-medium transition-all ${
+                item.state === 'limited'
+                  ? 'bg-[var(--color-accent-soft)] text-[var(--color-text)]'
+                  : item.state === 'locked'
+                  ? 'text-[var(--color-muted)] cursor-not-allowed'
+                  : 'text-[var(--color-text)] hover:bg-[rgba(18,21,31,0.04)]'
+              }`}
+            >
+              <span className="text-base">{item.icon}</span>
+              <span className="flex-1">{item.label}</span>
+              {item.state === 'limited' && (
+                <span
+                  className="rounded-full border border-[var(--color-accent)] px-2 py-0.5 text-[10px] font-semibold"
+                  style={{ color: T.accent }}
+                >
+                  Limited
+                </span>
+              )}
+              {item.state === 'locked' && (
+                <span className="text-xs" style={{ opacity: 0.4 }}>🔒</span>
+              )}
+            </div>
+          ))}
+        </nav>
+
+        {/* Upgrade nudge at bottom */}
+        <div className="mt-auto rounded-[18px] border border-[var(--color-accent)] p-4" style={{ background: T.accentSoft }}>
+          <p className="text-xs font-medium text-[var(--color-text)]">Upgrade to unlock all features</p>
+          <button
+            onClick={onUpgrade}
+            className="mt-3 w-full rounded-full py-2 text-xs font-semibold transition-all hover:opacity-90"
+            style={{ background: T.accent, color: T.accentDark }}
+          >
+            View plans
+          </button>
+        </div>
+      </aside>
+
+      {/* ── MAIN CONTENT ── */}
+      <main className="flex-1 px-8 py-10">
+        {/* Section 2: Real data (no blur) */}
+        <div className="mb-2 flex items-center justify-between">
+          <div>
+            <h2
+              className="font-display text-2xl font-[700] tracking-[-0.04em] text-[var(--color-text)]"
+              style={{ fontFamily: T.fontDisplay }}
+            >
+              {storeName}
+            </h2>
+            <p className="mt-1 text-sm text-[var(--color-muted)]">
+              Synced 10 recent orders • Updated just now
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span
+              className="rounded-full px-3 py-1.5 text-xs font-semibold"
+              style={{ background: T.accentSoft, color: T.accent }}
+            >
+              Free plan
+            </span>
+            <span
+              className="rounded-full px-3 py-1.5 text-xs font-semibold"
+              style={{ background: 'rgba(18,21,31,0.04)', color: T.muted }}
+            >
+              Live
+            </span>
+          </div>
+        </div>
+
+        {/* Quick insights */}
+        <div className="mb-8 grid grid-cols-3 gap-3">
           {quickInsights.map((insight) => (
             <div
               key={insight.label}
@@ -487,7 +567,7 @@ function FreeDashboard({ storeData, onUpgrade }) {
           ))}
         </div>
 
-        {/* ── SECTION 3: RECENT ORDERS ── */}
+        {/* Recent orders */}
         <div className="mb-8">
           <h3
             className="mb-4 font-display text-base font-[700] tracking-[-0.04em] text-[var(--color-text)]"
@@ -502,7 +582,7 @@ function FreeDashboard({ storeData, onUpgrade }) {
               <span>Amount</span>
               <span>Date</span>
             </div>
-            {recentOrders.map((order, i) => (
+            {recentOrders.map((order) => (
               <div
                 key={order.id}
                 className="grid grid-cols-4 gap-4 border-b border-[rgba(18,21,31,0.04)] px-5 py-3.5 last:border-0"
@@ -516,136 +596,125 @@ function FreeDashboard({ storeData, onUpgrade }) {
           </div>
         </div>
 
-        {/* ── SECTION 4: NAVIGATION PREVIEW ── */}
-        <div className="mb-6">
-          <h3
-            className="mb-4 font-display text-base font-[700] tracking-[-0.04em] text-[var(--color-text)]"
-            style={{ fontFamily: T.fontDisplay }}
+        {/* Section 3: Blurred dashboard preview */}
+        <div className="relative">
+          {/* Blurred dashboard */}
+          <div
+            className="relative overflow-hidden rounded-[24px] border border-[var(--color-line)]"
+            style={{ filter: 'blur(7px)', pointerEvents: 'none' }}
           >
-            Your navigation
-          </h3>
-          <div className="mb-4 grid grid-cols-6 gap-2">
-            {navItems.map((item) => (
-              <div
-                key={item.label}
-                className={`flex flex-col items-center gap-2 rounded-[16px] border px-3 py-4 text-center transition-all ${
-                  item.state === 'active'
-                    ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)]'
-                    : item.state === 'limited'
-                    ? 'border-[var(--color-line)] bg-white'
-                    : 'border-[var(--color-line)] bg-[rgba(18,21,31,0.02)]'
-                }`}
-              >
-                <span className="text-base">{item.icon}</span>
-                <span
-                  className="text-xs font-medium"
-                  style={{
-                    color: item.state === 'active' ? T.accent : item.state === 'limited' ? T.text : T.muted,
-                  }}
-                >
-                  {item.label}
-                </span>
-                {item.state === 'active' && (
-                  <span
-                    className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
-                    style={{ background: T.accent, color: T.accentDark }}
-                  >
-                    Active
-                  </span>
-                )}
-                {item.state === 'limited' && (
-                  <span
-                    className="rounded-full border border-[var(--color-line)] px-2 py-0.5 text-[10px] font-semibold text-[var(--color-muted)]"
-                  >
-                    Limited
-                  </span>
-                )}
-                {item.state === 'locked' && (
-                  <span className="text-xs" style={{ opacity: 0.4 }}>🔒</span>
-                )}
+            {/* Background */}
+            <div className="bg-gradient-to-br from-white to-[rgba(18,21,31,0.02)] p-6">
+              {/* Stats row */}
+              <div className="mb-4 grid grid-cols-4 gap-3">
+                {blurredDashboardItems.slice(0, 4).map((item, i) => (
+                  <div key={i} className="rounded-[16px] border border-[var(--color-line)] bg-white/80 p-4">
+                    <div className="text-xs text-[var(--color-muted)]">{item.label}</div>
+                    <div
+                      className="mt-1 font-display text-lg font-[700] tracking-[-0.04em]"
+                      style={{ fontFamily: T.fontDisplay, color: item.color }}
+                    >
+                      {item.value}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ── SECTION 5: SETUP CARD ── */}
-        <div
-          className="relative overflow-hidden rounded-[28px] border-2 p-8"
-          style={{
-            borderColor: T.accent,
-            background: `linear-gradient(135deg, ${T.white} 0%, rgba(7,213,104,0.04) 100%)`,
-            boxShadow: `0 20px 70px rgba(7,213,104,0.10)`,
-          }}
-        >
-          <div className="mb-2 text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: T.accent }}>
-            Unlock full control
-          </div>
-          <h3
-            className="font-display text-[1.7rem] font-[700] leading-tight tracking-[-0.05em] text-[var(--color-text)]"
-            style={{ fontFamily: T.fontDisplay }}
-          >
-            Unlock your full inventory control
-          </h3>
-          <p className="mt-3 text-base text-[var(--color-muted)]">
-            You're seeing a snapshot. Get complete insights, forecasts, and smarter decisions.
-          </p>
-
-          {/* Value points */}
-          <div className="mt-6 space-y-3">
-            {[
-              'See stockouts before they happen',
-              'Get exact reorder quantities',
-              'Track profit and product performance',
-            ].map((point, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <div
-                  className="flex h-6 w-6 items-center justify-center rounded-full"
-                  style={{ background: T.accentSoft }}
-                >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={T.accent} strokeWidth="3">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                </div>
-                <span className="text-sm font-medium text-[var(--color-text)]">{point}</span>
+              {/* Bottom row */}
+              <div className="grid grid-cols-4 gap-3">
+                {blurredDashboardItems.slice(4).map((item, i) => (
+                  <div key={i} className="rounded-[16px] border border-[var(--color-line)] bg-white/80 p-4">
+                    <div className="text-xs text-[var(--color-muted)]">{item.label}</div>
+                    <div
+                      className="mt-1 font-display text-lg font-[700] tracking-[-0.04em]"
+                      style={{ fontFamily: T.fontDisplay, color: item.color }}
+                    >
+                      {item.value}
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+            {/* Dim overlay */}
+            <div
+              className="absolute inset-0"
+              style={{ background: 'rgba(255,255,255,0.45)' }}
+            />
           </div>
 
-          {/* CTA */}
-          <div className="mt-8">
-            <button
-              onClick={onUpgrade}
-              className="hover-lift focus-ring w-full rounded-full py-4 text-base font-semibold transition-all"
+          {/* Section 4: Upgrade overlay card (centered on blurred area) */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div
+              className="relative overflow-hidden rounded-[28px] border-2 p-8"
               style={{
-                background: T.accent,
-                color: T.accentDark,
-                boxShadow: '0 14px 30px rgba(7,213,104,0.28)',
+                borderColor: T.accent,
+                background: `linear-gradient(135deg, ${T.white} 0%, rgba(7,213,104,0.06) 100%)`,
+                boxShadow: `0 24px 80px rgba(7,213,104,0.16)`,
+                maxWidth: '460px',
               }}
             >
-              Set up full dashboard
-            </button>
-            <p className="mt-3 text-center text-xs text-[var(--color-muted)]">
-              Takes less than 10 seconds
-            </p>
+              {/* Background glow */}
+              <div
+                className="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full opacity-25"
+                style={{ background: `radial-gradient(circle, ${T.accent} 0%, transparent 70%)` }}
+              />
+
+              <div className="relative">
+                <div className="mb-2 text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: T.accent }}>
+                  Upgrade available
+                </div>
+                <h3
+                  className="font-display text-[1.6rem] font-[700] leading-tight tracking-[-0.05em] text-[var(--color-text)]"
+                  style={{ fontFamily: T.fontDisplay }}
+                >
+                  Unlock full control of your inventory
+                </h3>
+                <p className="mt-3 text-sm text-[var(--color-muted)]">
+                  Get complete visibility, forecasts, and smarter decisions.
+                </p>
+
+                {/* Value points */}
+                <div className="mt-5 space-y-2.5">
+                  {[
+                    'Predict stockouts before they happen',
+                    'Smart reorder recommendations',
+                    'Track profit and performance',
+                  ].map((point, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <div
+                        className="flex h-5 w-5 items-center justify-center rounded-full"
+                        style={{ background: T.accentSoft }}
+                      >
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={T.accent} strokeWidth="3">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      </div>
+                      <span className="text-sm font-medium text-[var(--color-text)]">{point}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* CTA */}
+                <div className="mt-7">
+                  <button
+                    onClick={onUpgrade}
+                    className="hover-lift focus-ring w-full rounded-full py-4 text-base font-semibold transition-all"
+                    style={{
+                      background: T.accent,
+                      color: T.accentDark,
+                      boxShadow: '0 14px 30px rgba(7,213,104,0.28)',
+                    }}
+                  >
+                    Set up full dashboard
+                  </button>
+                  <p className="mt-3 text-center text-xs text-[var(--color-muted)]">
+                    Takes less than 10 seconds
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-
-        {/* Status pills */}
-        <div className="mt-6 flex items-center justify-center gap-3">
-          <span
-            className="rounded-full px-3 py-1.5 text-xs font-semibold"
-            style={{ background: T.accentSoft, color: T.accent }}
-          >
-            Free plan
-          </span>
-          <span
-            className="rounded-full px-3 py-1.5 text-xs font-semibold"
-            style={{ background: 'rgba(18,21,31,0.04)', color: T.muted }}
-          >
-            Live
-          </span>
-        </div>
-      </div>
+      </main>
     </div>
   );
 }
