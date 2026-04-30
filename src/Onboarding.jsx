@@ -437,103 +437,65 @@ function LoadingScreen({ onComplete }) {
 }
 
 /* ─────────────────────────────────────────────
-   STEP 4 — FREE TIER DASHBOARD
+   STEP 4 — FREE TIER DASHBOARD (Redesigned)
    ───────────────────────────────────────────── */
 function FreeDashboard({ storeData, onUpgrade }) {
-  const {
-    storeName,
-    recentOrders,
-    lightInsights,
-    fullDashboardLocked,
-  } = storeData;
+  const { storeName, recentOrders, quickInsights } = storeData;
 
   const navItems = [
-    { label: 'Dashboard', icon: '▦', locked: false },
-    { label: 'Inventory', icon: '☰', locked: false },
-    { label: 'Reorder', icon: '↻', locked: false },
-    { label: 'Purchase Orders', icon: '📋', locked: true },
-    { label: 'Analytics', icon: '◬', locked: true },
-    { label: 'Settings', icon: '⚙', locked: true },
-  ];
-
-  const lockedPreviewItems = [
-    { label: 'Stock Health', status: 'out of stock / at risk', locked: true },
-    { label: 'Reorder suggestions', status: '$4,320 at risk', locked: true },
-    { label: 'Product performance', status: 'top sellers ranked', locked: true },
-    { label: 'Alerts feed', status: '7 urgent alerts', locked: true },
-    { label: 'Purchase tracking', status: 'PO-2841 pending', locked: true },
-    { label: 'Forecast graph', status: 'demand projection', locked: true },
+    { label: 'Dashboard', icon: '▦', state: 'active' },
+    { label: 'Inventory', icon: '☰', state: 'limited' },
+    { label: 'Reorder', icon: '↻', state: 'limited' },
+    { label: 'Purchase Orders', icon: '📋', state: 'locked' },
+    { label: 'Analytics', icon: '◬', state: 'locked' },
+    { label: 'Settings', icon: '⚙', state: 'locked' },
   ];
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="mx-auto max-w-[900px] px-6 py-10">
+      <div className="mx-auto max-w-[760px] px-6 py-10">
 
-        {/* Header */}
-        <div className="mb-10 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            {/* Mini sidebar preview */}
-            <div
-              className="hidden w-48 rounded-[22px] border border-[var(--color-line)] bg-white p-3 shadow-sm lg:block"
-              style={{ filter: 'blur(2px)', opacity: 0.5, pointerEvents: 'none' }}
-            >
-              <div className="mb-3 flex items-center gap-2 border-b border-[var(--color-line)] pb-3">
-                <div className="h-6 w-6 rounded-full bg-[var(--color-accent-soft)]" />
-                <span className="text-xs font-semibold text-[var(--color-muted)]">Reordify</span>
-              </div>
-              <div className="space-y-1">
-                {navItems.map((item) => (
-                  <div
-                    key={item.label}
-                    className={`flex items-center gap-2 rounded-[12px] px-3 py-2 text-xs ${
-                      item.locked ? 'text-[var(--color-muted)]' : 'text-[var(--color-text)]'
-                    }`}
-                    style={{ background: item.locked ? 'rgba(18,21,31,0.03)' : 'rgba(7,213,104,0.06)' }}
-                  >
-                    <span>{item.icon}</span>
-                    <span>{item.label}</span>
-                    {item.locked && <span className="ml-auto">🔒</span>}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <div className="text-sm text-[var(--color-muted)]">Your store</div>
-              <h2
-                className="font-display text-2xl font-[700] tracking-[-0.04em] text-[var(--color-text)]"
-                style={{ fontFamily: T.fontDisplay }}
-              >
-                {storeName}
-              </h2>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <span
-              className="rounded-full px-3 py-1.5 text-xs font-semibold"
-              style={{ background: T.accentSoft, color: T.accent }}
-            >
-              Free plan
-            </span>
-            <div
-              className="rounded-full px-3 py-1.5 text-xs font-semibold"
-              style={{ background: 'rgba(18,21,31,0.04)', color: T.muted }}
-            >
-              Live
-            </div>
-          </div>
+        {/* ── SECTION 1: HEADER ── */}
+        <div className="mb-8">
+          <div className="mb-1 text-sm text-[var(--color-muted)]">Your store</div>
+          <h2
+            className="font-display text-2xl font-[700] tracking-[-0.04em] text-[var(--color-text)]"
+            style={{ fontFamily: T.fontDisplay }}
+          >
+            {storeName}
+          </h2>
+          <p className="mt-1 text-sm text-[var(--color-muted)]">
+            Synced 10 recent orders • Updated just now
+          </p>
         </div>
 
-        {/* ── SECTION 1: RECENT ORDERS (trust builder) ── */}
+        {/* ── SECTION 2: QUICK INSIGHTS ── */}
+        <div className="mb-6 grid grid-cols-3 gap-3">
+          {quickInsights.map((insight) => (
+            <div
+              key={insight.label}
+              className="rounded-[18px] border border-[var(--color-line)] bg-white px-4 py-3 shadow-sm"
+            >
+              <div
+                className="font-display text-xl font-[700] tracking-[-0.04em]"
+                style={{ fontFamily: T.fontDisplay, color: insight.color }}
+              >
+                {insight.value}
+              </div>
+              <div className="mt-1 text-xs text-[var(--color-muted)]">{insight.label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* ── SECTION 3: RECENT ORDERS ── */}
         <div className="mb-8">
           <h3
-            className="mb-4 font-display text-lg font-[700] tracking-[-0.04em] text-[var(--color-text)]"
+            className="mb-4 font-display text-base font-[700] tracking-[-0.04em] text-[var(--color-text)]"
             style={{ fontFamily: T.fontDisplay }}
           >
             Recent orders
           </h3>
-          <div className="rounded-[22px] border border-[var(--color-line)] bg-white shadow-sm">
+          <div className="rounded-[20px] border border-[var(--color-line)] bg-white shadow-sm">
             <div className="grid grid-cols-4 gap-4 border-b border-[var(--color-line)] px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--color-muted)]">
               <span>Order</span>
               <span>Items</span>
@@ -543,7 +505,7 @@ function FreeDashboard({ storeData, onUpgrade }) {
             {recentOrders.map((order, i) => (
               <div
                 key={order.id}
-                className="grid grid-cols-4 gap-4 border-b border-[rgba(18,21,31,0.04)] px-5 py-4 last:border-0"
+                className="grid grid-cols-4 gap-4 border-b border-[rgba(18,21,31,0.04)] px-5 py-3.5 last:border-0"
               >
                 <span className="font-medium text-[var(--color-text)]">#{order.id}</span>
                 <span className="text-sm text-[var(--color-muted)]">{order.items} items</span>
@@ -554,130 +516,134 @@ function FreeDashboard({ storeData, onUpgrade }) {
           </div>
         </div>
 
-        {/* ── SECTION 2: LIGHT INSIGHTS (free tier) ── */}
-        <div className="mb-8">
+        {/* ── SECTION 4: NAVIGATION PREVIEW ── */}
+        <div className="mb-6">
           <h3
-            className="mb-4 font-display text-lg font-[700] tracking-[-0.04em] text-[var(--color-text)]"
+            className="mb-4 font-display text-base font-[700] tracking-[-0.04em] text-[var(--color-text)]"
             style={{ fontFamily: T.fontDisplay }}
           >
-            Quick status
+            Your navigation
           </h3>
-          <div className="grid grid-cols-2 gap-4">
-            {lightInsights.map((insight) => (
+          <div className="mb-4 grid grid-cols-6 gap-2">
+            {navItems.map((item) => (
               <div
-                key={insight.label}
-                className="rounded-[20px] border border-[var(--color-line)] bg-white p-4 shadow-sm"
+                key={item.label}
+                className={`flex flex-col items-center gap-2 rounded-[16px] border px-3 py-4 text-center transition-all ${
+                  item.state === 'active'
+                    ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)]'
+                    : item.state === 'limited'
+                    ? 'border-[var(--color-line)] bg-white'
+                    : 'border-[var(--color-line)] bg-[rgba(18,21,31,0.02)]'
+                }`}
               >
-                <div
-                  className="font-display text-2xl font-[700] tracking-[-0.04em]"
-                  style={{ fontFamily: T.fontDisplay, color: insight.color }}
+                <span className="text-base">{item.icon}</span>
+                <span
+                  className="text-xs font-medium"
+                  style={{
+                    color: item.state === 'active' ? T.accent : item.state === 'limited' ? T.text : T.muted,
+                  }}
                 >
-                  {insight.value}
-                </div>
-                <div className="mt-1 text-sm text-[var(--color-muted)]">{insight.label}</div>
+                  {item.label}
+                </span>
+                {item.state === 'active' && (
+                  <span
+                    className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                    style={{ background: T.accent, color: T.accentDark }}
+                  >
+                    Active
+                  </span>
+                )}
+                {item.state === 'limited' && (
+                  <span
+                    className="rounded-full border border-[var(--color-line)] px-2 py-0.5 text-[10px] font-semibold text-[var(--color-muted)]"
+                  >
+                    Limited
+                  </span>
+                )}
+                {item.state === 'locked' && (
+                  <span className="text-xs" style={{ opacity: 0.4 }}>🔒</span>
+                )}
               </div>
             ))}
           </div>
         </div>
 
-        {/* ── SECTION 3: UPGRADE CARD (conversion driver) ── */}
+        {/* ── SECTION 5: SETUP CARD ── */}
         <div
           className="relative overflow-hidden rounded-[28px] border-2 p-8"
           style={{
             borderColor: T.accent,
             background: `linear-gradient(135deg, ${T.white} 0%, rgba(7,213,104,0.04) 100%)`,
-            boxShadow: `0 20px 70px rgba(7,213,104,0.12)`,
+            boxShadow: `0 20px 70px rgba(7,213,104,0.10)`,
           }}
         >
-          {/* Background glow */}
-          <div
-            className="pointer-events-none absolute -right-16 -top-16 h-60 w-60 rounded-full opacity-20"
-            style={{ background: `radial-gradient(circle, ${T.accent} 0%, transparent 70%)` }}
-          />
-
-          <div className="relative grid gap-8 lg:grid-cols-[1fr_220px]">
-            {/* Left: copy + preview list */}
-            <div>
-              <div className="mb-2 text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: T.accent }}>
-                Limited view
-              </div>
-              <h3
-                className="font-display text-[1.8rem] font-[700] leading-tight tracking-[-0.05em] text-[var(--color-text)]"
-                style={{ fontFamily: T.fontDisplay }}
-              >
-                See the full picture of your inventory
-              </h3>
-              <p className="mt-3 text-base text-[var(--color-muted)]">
-                You're only seeing a snapshot. Unlock complete insights, forecasts, and smarter decisions.
-              </p>
-
-              {/* Blurred preview items */}
-              <div className="mt-6 space-y-2">
-                {lockedPreviewItems.map((item, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-3 rounded-[14px] border border-[var(--color-line)] bg-white/60 px-4 py-3 backdrop-blur"
-                    style={{ filter: 'blur(1px)' }}
-                  >
-                    <div className="h-2 w-2 rounded-full" style={{ background: T.muted, opacity: 0.4 }} />
-                    <span className="text-sm font-medium" style={{ color: T.muted }}>{item.label}</span>
-                    <span className="ml-auto text-xs" style={{ color: T.muted }}>{item.status}</span>
-                    <span className="text-xs" style={{ opacity: 0.5 }}>🔒</span>
-                  </div>
-                ))}
-              </div>
-
-              <p className="mt-6 text-sm text-[var(--color-muted)]">
-                Get complete visibility and never run out of stock again
-              </p>
-            </div>
-
-            {/* Right: mini sidebar + CTA */}
-            <div className="flex flex-col items-center justify-center gap-4">
-              {/* Mini nav preview */}
-              <div
-                className="w-full rounded-[20px] border border-[var(--color-line)] bg-white/80 p-4 shadow-sm backdrop-blur"
-                style={{ filter: 'blur(0.5px)' }}
-              >
-                <div className="mb-3 flex items-center gap-2 border-b border-[var(--color-line)] pb-2">
-                  <div className="h-5 w-5 rounded-full bg-[var(--color-accent)]" />
-                  <span className="text-xs font-semibold text-[var(--color-text)]">Reordify</span>
-                </div>
-                <div className="space-y-1">
-                  {navItems.map((item) => (
-                    <div
-                      key={item.label}
-                      className={`flex items-center gap-2 rounded-[10px] px-3 py-2 text-xs ${
-                        item.locked ? 'text-[var(--color-muted)]' : 'text-[var(--color-text)] font-medium'
-                      }`}
-                      style={{ background: !item.locked ? T.accentSoft : 'rgba(18,21,31,0.02)' }}
-                    >
-                      <span>{item.icon}</span>
-                      <span>{item.label}</span>
-                      {item.locked && <span className="ml-auto opacity-50">🔒</span>}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* CTA */}
-              <button
-                onClick={onUpgrade}
-                className="hover-lift focus-ring w-full rounded-full py-4 text-base font-semibold transition-all"
-                style={{
-                  background: T.accent,
-                  color: T.accentDark,
-                  boxShadow: '0 14px 30px rgba(7,213,104,0.28)',
-                }}
-              >
-                Set up full dashboard
-              </button>
-
-              <button className="text-xs text-[var(--color-muted)] transition-colors hover:text-[var(--color-text)]">
-                Continue with basic view
-              </button>
-            </div>
+          <div className="mb-2 text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: T.accent }}>
+            Unlock full control
           </div>
+          <h3
+            className="font-display text-[1.7rem] font-[700] leading-tight tracking-[-0.05em] text-[var(--color-text)]"
+            style={{ fontFamily: T.fontDisplay }}
+          >
+            Unlock your full inventory control
+          </h3>
+          <p className="mt-3 text-base text-[var(--color-muted)]">
+            You're seeing a snapshot. Get complete insights, forecasts, and smarter decisions.
+          </p>
+
+          {/* Value points */}
+          <div className="mt-6 space-y-3">
+            {[
+              'See stockouts before they happen',
+              'Get exact reorder quantities',
+              'Track profit and product performance',
+            ].map((point, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <div
+                  className="flex h-6 w-6 items-center justify-center rounded-full"
+                  style={{ background: T.accentSoft }}
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={T.accent} strokeWidth="3">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </div>
+                <span className="text-sm font-medium text-[var(--color-text)]">{point}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <div className="mt-8">
+            <button
+              onClick={onUpgrade}
+              className="hover-lift focus-ring w-full rounded-full py-4 text-base font-semibold transition-all"
+              style={{
+                background: T.accent,
+                color: T.accentDark,
+                boxShadow: '0 14px 30px rgba(7,213,104,0.28)',
+              }}
+            >
+              Set up full dashboard
+            </button>
+            <p className="mt-3 text-center text-xs text-[var(--color-muted)]">
+              Takes less than 10 seconds
+            </p>
+          </div>
+        </div>
+
+        {/* Status pills */}
+        <div className="mt-6 flex items-center justify-center gap-3">
+          <span
+            className="rounded-full px-3 py-1.5 text-xs font-semibold"
+            style={{ background: T.accentSoft, color: T.accent }}
+          >
+            Free plan
+          </span>
+          <span
+            className="rounded-full px-3 py-1.5 text-xs font-semibold"
+            style={{ background: 'rgba(18,21,31,0.04)', color: T.muted }}
+          >
+            Live
+          </span>
         </div>
       </div>
     </div>
@@ -1002,12 +968,16 @@ export default function OnboardingFlow() {
       { id: '2839', items: 2, amount: '$142.50', date: 'Apr 27' },
       { id: '2838', items: 4, amount: '$231.00', date: 'Apr 26' },
       { id: '2837', items: 1, amount: '$67.00', date: 'Apr 25' },
+      { id: '2836', items: 2, amount: '$198.00', date: 'Apr 24' },
+      { id: '2835', items: 3, amount: '$112.00', date: 'Apr 23' },
+      { id: '2834', items: 1, amount: '$76.50', date: 'Apr 22' },
+      { id: '2833', items: 2, amount: '$155.00', date: 'Apr 21' },
+      { id: '2832', items: 4, amount: '$289.00', date: 'Apr 20' },
     ],
-    lightInsights: [
+    quickInsights: [
       { label: 'Out of stock', value: '2 items', color: T.alert },
       { label: 'Low in stock', value: '3 products', color: '#f59e0b' },
-      { label: 'Orders today', value: '12', color: T.text },
-      { label: 'This week', value: '$4,320', color: T.accent },
+      { label: 'Next stockout', value: '4 days', color: T.text },
     ],
     fullDashboardLocked: true,
   };
