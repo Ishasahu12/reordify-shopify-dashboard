@@ -79,15 +79,63 @@ function BtnGhost({ children, loading, onClick, disabled, fullWidth }) {
   );
 }
 
-function Card({ children, style, className = '', elevated }) {
-  return (
-    <div
-      className={`rounded-[28px] border border-[var(--color-line)] bg-white p-6 shadow-sm ${className}`}
-      style={elevated ? { boxShadow: T.shadowLift, borderColor: 'rgba(7,213,104,0.16)' } : {}}
-    >
-      {children}
-    </div>
-  );
+/* ─────────────────────────────────────────────
+   SHARED SVG ICON SYSTEM (stroke-based, 1.5px consistent)
+   ───────────────────────────────────────────── */
+function NavIcon({ type, size = 18, color = 'currentColor' }) {
+  const icons = {
+    dashboard: (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="3" width="7" height="7" rx="1.5" />
+        <rect x="14" y="3" width="7" height="7" rx="1.5" />
+        <rect x="3" y="14" width="7" height="7" rx="1.5" />
+        <rect x="14" y="14" width="7" height="7" rx="1.5" />
+      </svg>
+    ),
+    inventory: (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+        <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+        <line x1="12" y1="22.08" x2="12" y2="12" />
+      </svg>
+    ),
+    reorder: (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="17 1 21 5 17 9" />
+        <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+        <polyline points="7 23 3 19 7 15" />
+        <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+      </svg>
+    ),
+    purchaseOrders: (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" />
+        <rect x="9" y="3" width="6" height="4" rx="1.5" />
+        <line x1="9" y1="12" x2="15" y2="12" />
+        <line x1="9" y1="16" x2="13" y2="16" />
+      </svg>
+    ),
+    analytics: (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="18" y1="20" x2="18" y2="10" />
+        <line x1="12" y1="20" x2="12" y2="4" />
+        <line x1="6" y1="20" x2="6" y2="14" />
+      </svg>
+    ),
+    settings: (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="3" />
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+      </svg>
+    ),
+    lock: (
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+      </svg>
+    ),
+  };
+  return icons[type] || null;
 }
 
 function Chip({ children, selected, onClick }) {
@@ -444,12 +492,12 @@ function FreeDashboard({ storeData, onUpgrade }) {
   const { storeName, recentOrders, stockSnapshot } = storeData;
 
   const navItems = [
-    { label: 'Dashboard', icon: '▦', state: 'limited' },
-    { label: 'Inventory', icon: '☰', state: 'locked' },
-    { label: 'Reorder', icon: '↻', state: 'locked' },
-    { label: 'Purchase Orders', icon: '📋', state: 'locked' },
-    { label: 'Analytics', icon: '◬', state: 'locked' },
-    { label: 'Settings', icon: '⚙', state: 'locked' },
+    { label: 'Dashboard', icon: 'dashboard', state: 'limited' },
+    { label: 'Inventory', icon: 'inventory', state: 'locked' },
+    { label: 'Reorder', icon: 'reorder', state: 'locked' },
+    { label: 'Purchase Orders', icon: 'purchaseOrders', state: 'locked' },
+    { label: 'Analytics', icon: 'analytics', state: 'locked' },
+    { label: 'Settings', icon: 'settings', state: 'locked' },
   ];
 
   const blurredInsights = [
@@ -478,14 +526,20 @@ function FreeDashboard({ storeData, onUpgrade }) {
                   : 'text-[var(--color-muted)] cursor-not-allowed'
               }`}
             >
-              <span className="text-base">{item.icon}</span>
+              <span className="flex h-5 w-5 items-center justify-center">
+                <NavIcon type={item.icon} size={18} color={item.state === 'locked' ? T.muted : T.text} />
+              </span>
               <span className="flex-1">{item.label}</span>
               {item.state === 'limited' && (
                 <span className="rounded-full border border-[var(--color-accent)] px-2 py-0.5 text-[10px] font-semibold" style={{ color: T.accent }}>
                   Limited
                 </span>
               )}
-              {item.state === 'locked' && <span className="text-xs" style={{ opacity: 0.4 }}>🔒</span>}
+              {item.state === 'locked' && (
+                <span style={{ opacity: 0.4 }}>
+                  <NavIcon type="lock" size={12} color={T.muted} />
+                </span>
+              )}
             </div>
           ))}
         </nav>
