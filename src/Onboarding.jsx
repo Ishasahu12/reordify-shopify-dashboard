@@ -437,8 +437,8 @@ function LoadingScreen({ onComplete }) {
 }
 
 /* ─────────────────────────────────────────────
-   STEP 4 — FREE TIER DASHBOARD (Redesigned v2)
-   Sidebar + real data + blurred preview + upgrade overlay
+   STEP 4 — FREE TIER DASHBOARD (Redesigned v3)
+   Product-centered orders + inline upgrade panel
    ───────────────────────────────────────────── */
 function FreeDashboard({ storeData, onUpgrade }) {
   const { storeName, recentOrders, quickInsights } = storeData;
@@ -452,23 +452,29 @@ function FreeDashboard({ storeData, onUpgrade }) {
     { label: 'Settings', icon: '⚙', state: 'locked' },
   ];
 
-  const blurredDashboardItems = [
+  // Compute revenue from orders
+  const totalRevenue = recentOrders.reduce((sum, o) => {
+    const num = parseFloat(o.amount.replace('$', '').replace(',', ''));
+    return sum + num;
+  }, 0);
+  const topProduct = 'Hydration Pack';
+
+  const blurredMetrics = [
     { label: 'Stock Health', value: '3 at risk', color: T.alert },
     { label: 'Revenue at risk', value: '$4,320', color: T.alert },
     { label: 'Avg. sell-through', value: '68%', color: T.accent },
     { label: 'Units to reorder', value: '340', color: T.text },
     { label: 'Active POs', value: '2 pending', color: T.muted },
     { label: 'This week', value: '$12,480', color: T.accent },
-    { label: 'Top SKU', value: 'Hydration Pack', color: T.text },
     { label: 'Forecast', value: '+12% demand', color: T.accent },
+    { label: 'Top SKU', value: topProduct, color: T.text },
   ];
 
   return (
     <div className="flex min-h-screen bg-white">
-      {/* ── SIDEBAR NAVIGATION ── */}
+      {/* ── SIDEBAR ── */}
       <aside
-        className="sticky top-0 flex h-screen w-56 flex-col border-r border-[var(--color-line)] bg-white px-4 py-8"
-        style={{ width: '220px' }}
+        className="sticky top-0 flex h-screen w-[220px] flex-col border-r border-[var(--color-line)] bg-white px-4 py-8"
       >
         {/* Logo */}
         <div className="mb-8 flex items-center gap-2 px-3">
@@ -483,18 +489,13 @@ function FreeDashboard({ storeData, onUpgrade }) {
               className={`flex items-center gap-3 rounded-[14px] px-3 py-3 text-sm font-medium transition-all ${
                 item.state === 'limited'
                   ? 'bg-[var(--color-accent-soft)] text-[var(--color-text)]'
-                  : item.state === 'locked'
-                  ? 'text-[var(--color-muted)] cursor-not-allowed'
-                  : 'text-[var(--color-text)] hover:bg-[rgba(18,21,31,0.04)]'
+                  : 'text-[var(--color-muted)] cursor-not-allowed'
               }`}
             >
               <span className="text-base">{item.icon}</span>
               <span className="flex-1">{item.label}</span>
               {item.state === 'limited' && (
-                <span
-                  className="rounded-full border border-[var(--color-accent)] px-2 py-0.5 text-[10px] font-semibold"
-                  style={{ color: T.accent }}
-                >
+                <span className="rounded-full border border-[var(--color-accent)] px-2 py-0.5 text-[10px] font-semibold" style={{ color: T.accent }}>
                   Limited
                 </span>
               )}
@@ -505,7 +506,7 @@ function FreeDashboard({ storeData, onUpgrade }) {
           ))}
         </nav>
 
-        {/* Upgrade nudge at bottom */}
+        {/* Upgrade nudge */}
         <div className="mt-auto rounded-[18px] border border-[var(--color-accent)] p-4" style={{ background: T.accentSoft }}>
           <p className="text-xs font-medium text-[var(--color-text)]">Upgrade to unlock all features</p>
           <button
@@ -520,8 +521,9 @@ function FreeDashboard({ storeData, onUpgrade }) {
 
       {/* ── MAIN CONTENT ── */}
       <main className="flex-1 px-8 py-10">
-        {/* Section 2: Real data (no blur) */}
-        <div className="mb-2 flex items-center justify-between">
+
+        {/* ── SECTION 1: STORE HEADER ── */}
+        <div className="mb-6 flex items-center justify-between">
           <div>
             <h2
               className="font-display text-2xl font-[700] tracking-[-0.04em] text-[var(--color-text)]"
@@ -534,183 +536,151 @@ function FreeDashboard({ storeData, onUpgrade }) {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <span
-              className="rounded-full px-3 py-1.5 text-xs font-semibold"
-              style={{ background: T.accentSoft, color: T.accent }}
-            >
+            <span className="rounded-full px-3 py-1.5 text-xs font-semibold" style={{ background: T.accentSoft, color: T.accent }}>
               Free plan
             </span>
-            <span
-              className="rounded-full px-3 py-1.5 text-xs font-semibold"
-              style={{ background: 'rgba(18,21,31,0.04)', color: T.muted }}
-            >
+            <span className="rounded-full px-3 py-1.5 text-xs font-semibold" style={{ background: 'rgba(18,21,31,0.04)', color: T.muted }}>
               Live
             </span>
           </div>
         </div>
 
-        {/* Quick insights */}
-        <div className="mb-8 grid grid-cols-3 gap-3">
-          {quickInsights.map((insight) => (
+        {/* ── SECTION 2: MINI INSIGHTS STRIP ── */}
+        <div className="mb-6 grid grid-cols-3 gap-4">
+          {[
+            { label: 'Orders (last 10)', value: '10', color: T.text, icon: '📦' },
+            { label: 'Revenue', value: `$${totalRevenue.toLocaleString('en-IN', { minimumFractionDigits: 0 })}`, color: T.accent, icon: '💰' },
+            { label: 'Top product', value: topProduct, color: T.text, icon: '⭐' },
+          ].map((item) => (
             <div
-              key={insight.label}
-              className="rounded-[18px] border border-[var(--color-line)] bg-white px-4 py-3 shadow-sm"
+              key={item.label}
+              className="flex items-center gap-4 rounded-[18px] border border-[var(--color-line)] bg-white px-5 py-4 shadow-sm"
             >
-              <div
-                className="font-display text-xl font-[700] tracking-[-0.04em]"
-                style={{ fontFamily: T.fontDisplay, color: insight.color }}
-              >
-                {insight.value}
+              <span className="text-xl">{item.icon}</span>
+              <div>
+                <div className="font-display text-2xl font-[700] tracking-[-0.04em]" style={{ fontFamily: T.fontDisplay, color: item.color }}>
+                  {item.value}
+                </div>
+                <div className="mt-0.5 text-xs text-[var(--color-muted)]">{item.label}</div>
               </div>
-              <div className="mt-1 text-xs text-[var(--color-muted)]">{insight.label}</div>
             </div>
           ))}
         </div>
 
-        {/* Recent orders */}
-        <div className="mb-8">
-          <h3
-            className="mb-4 font-display text-base font-[700] tracking-[-0.04em] text-[var(--color-text)]"
-            style={{ fontFamily: T.fontDisplay }}
-          >
+        {/* ── SECTION 3: RECENT ORDERS (product-centered) ── */}
+        <div className="mb-6">
+          <h3 className="mb-4 font-display text-base font-[700] tracking-[-0.04em] text-[var(--color-text)]" style={{ fontFamily: T.fontDisplay }}>
             Recent orders
           </h3>
-          <div className="rounded-[20px] border border-[var(--color-line)] bg-white shadow-sm">
-            <div className="grid grid-cols-4 gap-4 border-b border-[var(--color-line)] px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--color-muted)]">
-              <span>Order</span>
-              <span>Items</span>
-              <span>Amount</span>
-              <span>Date</span>
-            </div>
-            {recentOrders.map((order) => (
+          <div className="overflow-hidden rounded-[20px] border border-[var(--color-line)] bg-white shadow-sm">
+            {recentOrders.map((order, i) => (
               <div
-                key={order.id}
-                className="grid grid-cols-4 gap-4 border-b border-[rgba(18,21,31,0.04)] px-5 py-3.5 last:border-0"
+                key={i}
+                className={`flex items-center justify-between border-b border-[rgba(18,21,31,0.04)] px-5 py-4 last:border-0 ${
+                  i === 0 ? 'border-t-0' : ''
+                }`}
               >
-                <span className="font-medium text-[var(--color-text)]">#{order.id}</span>
-                <span className="text-sm text-[var(--color-muted)]">{order.items} items</span>
-                <span className="font-medium text-[var(--color-text)]">{order.amount}</span>
-                <span className="text-sm text-[var(--color-muted)]">{order.date}</span>
+                <div className="flex items-center gap-4">
+                  {/* Product image placeholder */}
+                  <div
+                    className="flex h-10 w-10 items-center justify-center rounded-xl text-sm font-bold"
+                    style={{ background: 'rgba(18,21,31,0.04)', color: T.muted }}
+                  >
+                    {order.product.charAt(0)}
+                  </div>
+                  <div>
+                    <div className="font-medium text-[var(--color-text)]">{order.product}</div>
+                    <div className="mt-0.5 text-xs text-[var(--color-muted)]">Qty: {order.items}</div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="font-medium text-[var(--color-text)]">{order.amount}</div>
+                  <div className="mt-0.5 text-xs text-[var(--color-muted)]">{order.date}</div>
+                </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Section 3: Blurred dashboard preview */}
-        <div className="relative">
-          {/* Blurred dashboard */}
-          <div
-            className="relative overflow-hidden rounded-[24px] border border-[var(--color-line)]"
-            style={{ filter: 'blur(7px)', pointerEvents: 'none' }}
-          >
-            {/* Background */}
-            <div className="bg-gradient-to-br from-white to-[rgba(18,21,31,0.02)] p-6">
-              {/* Stats row */}
-              <div className="mb-4 grid grid-cols-4 gap-3">
-                {blurredDashboardItems.slice(0, 4).map((item, i) => (
-                  <div key={i} className="rounded-[16px] border border-[var(--color-line)] bg-white/80 p-4">
-                    <div className="text-xs text-[var(--color-muted)]">{item.label}</div>
-                    <div
-                      className="mt-1 font-display text-lg font-[700] tracking-[-0.04em]"
-                      style={{ fontFamily: T.fontDisplay, color: item.color }}
-                    >
-                      {item.value}
-                    </div>
-                  </div>
-                ))}
+        {/* ── SECTION 4: LOCKED DASHBOARD PREVIEW ── */}
+        <div className="mb-6 relative overflow-hidden rounded-[24px] border border-[var(--color-line)]" style={{ filter: 'blur(6px)', pointerEvents: 'none' }}>
+          <div className="bg-gradient-to-br from-white to-[rgba(18,21,31,0.02)] p-6">
+            {/* Stats row */}
+            <div className="mb-4 grid grid-cols-4 gap-3">
+              {blurredMetrics.slice(0, 4).map((m, i) => (
+                <div key={i} className="rounded-[16px] border border-[var(--color-line)] bg-white/80 p-4">
+                  <div className="text-xs text-[var(--color-muted)]">{m.label}</div>
+                  <div className="mt-1 font-display text-lg font-[700] tracking-[-0.04em]" style={{ fontFamily: T.fontDisplay, color: m.color }}>{m.value}</div>
+                </div>
+              ))}
+            </div>
+            {/* Bottom row */}
+            <div className="grid grid-cols-4 gap-3">
+              {blurredMetrics.slice(4).map((m, i) => (
+                <div key={i} className="rounded-[16px] border border-[var(--color-line)] bg-white/80 p-4">
+                  <div className="text-xs text-[var(--color-muted)]">{m.label}</div>
+                  <div className="mt-1 font-display text-lg font-[700] tracking-[-0.04em]" style={{ fontFamily: T.fontDisplay, color: m.color }}>{m.value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="absolute inset-0" style={{ background: 'rgba(255,255,255,0.5)' }} />
+        </div>
+
+        {/* ── SECTION 5: FULL-WIDTH INTEGRATED UPGRADE PANEL ── */}
+        <div
+          className="relative overflow-hidden rounded-[24px] border-2 px-8 py-7"
+          style={{
+            borderColor: T.accent,
+            background: `linear-gradient(135deg, ${T.white} 0%, rgba(7,213,104,0.04) 100%)`,
+            boxShadow: `0 16px 60px rgba(7,213,104,0.10)`,
+          }}
+        >
+          {/* Left: copy + points */}
+          <div className="flex items-start justify-between gap-8">
+            <div className="flex-1">
+              <div className="mb-2 text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: T.accent }}>
+                Upgrade available
               </div>
-              {/* Bottom row */}
-              <div className="grid grid-cols-4 gap-3">
-                {blurredDashboardItems.slice(4).map((item, i) => (
-                  <div key={i} className="rounded-[16px] border border-[var(--color-line)] bg-white/80 p-4">
-                    <div className="text-xs text-[var(--color-muted)]">{item.label}</div>
-                    <div
-                      className="mt-1 font-display text-lg font-[700] tracking-[-0.04em]"
-                      style={{ fontFamily: T.fontDisplay, color: item.color }}
-                    >
-                      {item.value}
+              <h3
+                className="font-display text-[1.5rem] font-[700] leading-tight tracking-[-0.05em] text-[var(--color-text)]"
+                style={{ fontFamily: T.fontDisplay }}
+              >
+                Unlock full control of your inventory
+              </h3>
+              <p className="mt-2 text-sm text-[var(--color-muted)]">
+                Get complete visibility, forecasts, and smarter decisions.
+              </p>
+
+              {/* Value points */}
+              <div className="mt-5 grid grid-cols-3 gap-4">
+                {[
+                  'Predict stockouts before they happen',
+                  'Smart reorder recommendations',
+                  'Track profit and performance',
+                ].map((point, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full" style={{ background: T.accentSoft }}>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={T.accent} strokeWidth="3">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
                     </div>
+                    <span className="text-xs font-medium text-[var(--color-text)]">{point}</span>
                   </div>
                 ))}
               </div>
             </div>
-            {/* Dim overlay */}
-            <div
-              className="absolute inset-0"
-              style={{ background: 'rgba(255,255,255,0.45)' }}
-            />
-          </div>
 
-          {/* Section 4: Upgrade overlay card (centered on blurred area) */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div
-              className="relative overflow-hidden rounded-[28px] border-2 p-8"
-              style={{
-                borderColor: T.accent,
-                background: `linear-gradient(135deg, ${T.white} 0%, rgba(7,213,104,0.06) 100%)`,
-                boxShadow: `0 24px 80px rgba(7,213,104,0.16)`,
-                maxWidth: '460px',
-              }}
-            >
-              {/* Background glow */}
-              <div
-                className="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full opacity-25"
-                style={{ background: `radial-gradient(circle, ${T.accent} 0%, transparent 70%)` }}
-              />
-
-              <div className="relative">
-                <div className="mb-2 text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: T.accent }}>
-                  Upgrade available
-                </div>
-                <h3
-                  className="font-display text-[1.6rem] font-[700] leading-tight tracking-[-0.05em] text-[var(--color-text)]"
-                  style={{ fontFamily: T.fontDisplay }}
-                >
-                  Unlock full control of your inventory
-                </h3>
-                <p className="mt-3 text-sm text-[var(--color-muted)]">
-                  Get complete visibility, forecasts, and smarter decisions.
-                </p>
-
-                {/* Value points */}
-                <div className="mt-5 space-y-2.5">
-                  {[
-                    'Predict stockouts before they happen',
-                    'Smart reorder recommendations',
-                    'Track profit and performance',
-                  ].map((point, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <div
-                        className="flex h-5 w-5 items-center justify-center rounded-full"
-                        style={{ background: T.accentSoft }}
-                      >
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={T.accent} strokeWidth="3">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                      </div>
-                      <span className="text-sm font-medium text-[var(--color-text)]">{point}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* CTA */}
-                <div className="mt-7">
-                  <button
-                    onClick={onUpgrade}
-                    className="hover-lift focus-ring w-full rounded-full py-4 text-base font-semibold transition-all"
-                    style={{
-                      background: T.accent,
-                      color: T.accentDark,
-                      boxShadow: '0 14px 30px rgba(7,213,104,0.28)',
-                    }}
-                  >
-                    Set up full dashboard
-                  </button>
-                  <p className="mt-3 text-center text-xs text-[var(--color-muted)]">
-                    Takes less than 10 seconds
-                  </p>
-                </div>
-              </div>
+            {/* Right: CTA */}
+            <div className="flex flex-col items-center justify-center" style={{ minWidth: '200px' }}>
+              <button
+                onClick={onUpgrade}
+                className="hover-lift focus-ring w-full rounded-full py-4 text-base font-semibold transition-all"
+                style={{ background: T.accent, color: T.accentDark, boxShadow: '0 14px 30px rgba(7,213,104,0.28)' }}
+              >
+                Set up full dashboard
+              </button>
+              <p className="mt-2 text-xs text-[var(--color-muted)]">Takes less than 10 seconds</p>
             </div>
           </div>
         </div>
@@ -1032,16 +1002,16 @@ export default function OnboardingFlow() {
   const freeStoreData = {
     storeName: 'BluePeak Apparel',
     recentOrders: [
-      { id: '2841', items: 3, amount: '$184.00', date: 'Apr 29' },
-      { id: '2840', items: 1, amount: '$89.00', date: 'Apr 28' },
-      { id: '2839', items: 2, amount: '$142.50', date: 'Apr 27' },
-      { id: '2838', items: 4, amount: '$231.00', date: 'Apr 26' },
-      { id: '2837', items: 1, amount: '$67.00', date: 'Apr 25' },
-      { id: '2836', items: 2, amount: '$198.00', date: 'Apr 24' },
-      { id: '2835', items: 3, amount: '$112.00', date: 'Apr 23' },
-      { id: '2834', items: 1, amount: '$76.50', date: 'Apr 22' },
-      { id: '2833', items: 2, amount: '$155.00', date: 'Apr 21' },
-      { id: '2832', items: 4, amount: '$289.00', date: 'Apr 20' },
+      { product: 'Linen Summer Shirt ×2', items: 2, amount: '$142.50', date: 'Apr 29' },
+      { product: 'Hydration Pack', items: 1, amount: '$89.00', date: 'Apr 28' },
+      { product: 'Cargo Shorts Navy', items: 2, amount: '$198.00', date: 'Apr 27' },
+      { product: 'Wren Jacket Olive M', items: 1, amount: '$176.00', date: 'Apr 26' },
+      { product: 'Hoodie Classic White', items: 3, amount: '$204.00', date: 'Apr 25' },
+      { product: 'Performance Tee L', items: 4, amount: '$132.00', date: 'Apr 24' },
+      { product: 'Trail Shorts Khaki', items: 2, amount: '$118.00', date: 'Apr 23' },
+      { product: 'Linen Summer Shirt', items: 1, amount: '$71.25', date: 'Apr 22' },
+      { product: 'Crossback Bra Top', items: 2, amount: '$98.00', date: 'Apr 21' },
+      { product: 'Adventure Vest S', items: 1, amount: '$145.00', date: 'Apr 20' },
     ],
     quickInsights: [
       { label: 'Out of stock', value: '2 items', color: T.alert },
