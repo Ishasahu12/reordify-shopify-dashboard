@@ -174,6 +174,440 @@ function ProgressDots({ label }) {
 }
 
 /* ─────────────────────────────────────────────
+   PREMIUM DASHBOARD (PAID USERS)
+   ───────────────────────────────────────────── */
+function PremiumDashboard({ storeData }) {
+  const { storeName, kpis, aiInsights, stockHealth, topProducts, recentOrders } = storeData;
+
+  const navItems = [
+    { label: 'Dashboard', icon: 'dashboard', state: 'active' },
+    { label: 'Inventory', icon: 'inventory', state: 'unlocked' },
+    { label: 'Reorder', icon: 'reorder', state: 'unlocked' },
+    { label: 'Purchase Orders', icon: 'purchaseOrders', state: 'unlocked' },
+    { label: 'Analytics', icon: 'analytics', state: 'unlocked' },
+    { label: 'Settings', icon: 'settings', state: 'unlocked' },
+  ];
+
+  const [activeTab, setActiveTab] = useState('top_selling');
+  const [dateRange, setDateRange] = useState('7d');
+
+  const dateRanges = ['Today', '7d', '30d', '90d'];
+  const statusConfig = {
+    delivered: { label: 'Delivered', bg: T.accentSoft, color: T.accent },
+    in_progress: { label: 'In Progress', bg: 'rgba(245,158,11,0.12)', color: '#f59e0b' },
+    cancelled: { label: 'Cancelled', bg: T.alertSoft, color: T.alert },
+  };
+  const productStatusConfig = {
+    hot: { label: 'Hot', bg: T.accentSoft, color: T.accent },
+    slow: { label: 'Slow', bg: 'rgba(245,158,11,0.12)', color: '#f59e0b' },
+    dead: { label: 'Dead', bg: T.alertSoft, color: T.alert },
+  };
+
+  const kpiDefaults = [
+    { label: 'Revenue', value: '$4,218', change: '+12.4%', up: true },
+    { label: 'Profit', value: '$1,247', change: '+8.2%', up: true },
+    { label: 'Orders', value: '142', change: '+5.1%', up: true },
+    { label: 'Inventory Value', value: '$28,450', change: '-2.1%', up: false },
+    { label: 'Low Stock Items', value: '7', change: 'Critical', up: false },
+  ];
+  const kpisToShow = kpis || kpiDefaults;
+
+  const insightDefaults = [
+    { icon: 'alert', title: '5 products will go out of stock in 3 days', desc: 'Black Hoodie, Performance Tee, and 3 more', cta: 'Reorder now', urgent: true },
+    { icon: 'trend', title: 'Reorder recommended for Linen Shirt', desc: 'Sales velocity up 34% this week', cta: 'View details', urgent: false },
+    { icon: 'warning', title: 'Overstock detected in 12 SKUs', desc: 'Consider discounting to free up capital', cta: 'Review items', urgent: false },
+  ];
+  const insightsToShow = aiInsights || insightDefaults;
+
+  const healthDefaults = [
+    { label: 'Total Units', value: '1,284', color: T.text },
+    { label: 'Out of Stock', value: '2', color: T.alert },
+    { label: 'Low Stock', value: '7', color: '#f59e0b' },
+    { label: 'Overstocked', value: '12', color: '#8b6cff' },
+    { label: 'Healthy Stock', value: '89%', color: T.accent },
+  ];
+  const healthToShow = stockHealth || healthDefaults;
+
+  const productDefaults = [
+    { name: 'Linen Summer Shirt', variant: 'EU 40 / White', sold: 24, revenue: '$1,842', profit: 498, status: 'hot' },
+    { name: 'Hoodie Classic White', variant: 'L / True White', sold: 18, revenue: '$1,296', profit: 412, status: 'hot' },
+    { name: 'Performance Tee', variant: 'XL / Graphite', sold: 12, revenue: '$432', profit: 142, status: 'slow' },
+    { name: 'Crossback Bra Top', variant: 'S / Sage', sold: 9, revenue: '$486', profit: 168, status: 'slow' },
+    { name: 'Adventure Vest', variant: 'M / Slate', sold: 3, revenue: '$195', profit: 52, status: 'dead' },
+  ];
+  const productsToShow = topProducts || productDefaults;
+
+  return (
+    <div className="flex min-h-screen bg-[rgba(18,21,31,0.02)]">
+      {/* ── SIDEBAR ── */}
+      <aside className="sticky top-0 flex h-screen w-[240px] flex-col border-r border-[var(--color-line)] bg-white px-4 py-7">
+        {/* Logo */}
+        <div className="mb-8 flex items-center gap-2 px-3">
+          <img src="/logo.jpeg" alt="Reordify" className="h-8 w-auto object-contain" />
+        </div>
+
+        {/* Nav */}
+        <nav className="flex flex-col gap-1">
+          {navItems.map((item) => (
+            <div
+              key={item.label}
+              className={`flex items-center gap-3 rounded-[14px] px-3 py-3 text-sm font-medium transition-all ${
+                item.state === 'active'
+                  ? 'bg-[var(--color-accent-soft)] text-[var(--color-text)]'
+                  : 'text-[var(--color-muted)] hover:bg-[rgba(18,21,31,0.03)] hover:text-[var(--color-text)] cursor-pointer'
+              }`}
+            >
+              <span className="flex h-5 w-5 items-center justify-center">
+                <NavIcon type={item.icon} size={18} color={item.state === 'active' ? T.accent : T.muted} />
+              </span>
+              <span className="flex-1">{item.label}</span>
+              {item.state === 'active' && (
+                <span className="h-1.5 w-1.5 rounded-full" style={{ background: T.accent }} />
+              )}
+            </div>
+          ))}
+        </nav>
+
+        {/* Plan badge */}
+        <div className="mt-auto rounded-[14px] border border-[var(--color-accent)] p-3" style={{ background: T.accentSoft }}>
+          <div className="flex items-center gap-2">
+            <div className="flex h-6 w-6 items-center justify-center rounded-full" style={{ background: T.accent }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#062912" strokeWidth="2.5">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+            <span className="text-xs font-semibold" style={{ color: T.accentDark }}>Pro Plan Active</span>
+          </div>
+        </div>
+      </aside>
+
+      {/* ── MAIN CONTENT ── */}
+      <main className="flex-1 px-7 py-8">
+
+        {/* 1. TOP HEADER */}
+        <div className="mb-7 flex items-center justify-between">
+          <div>
+            <h1 className="font-display text-[1.6rem] font-[700] tracking-[-0.04em] text-[var(--color-text)]" style={{ fontFamily: T.fontDisplay }}>
+              Welcome back, {storeName}
+            </h1>
+            <p className="mt-1 text-sm text-[var(--color-muted)]">Here's your store performance today</p>
+          </div>
+          <div className="flex items-center gap-3">
+            {/* Date range selector */}
+            <div className="flex items-center gap-1 rounded-full border border-[var(--color-line)] bg-white px-1 py-1">
+              {dateRanges.map((r) => (
+                <button
+                  key={r}
+                  onClick={() => setDateRange(r)}
+                  className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
+                    dateRange === r
+                      ? 'bg-[var(--color-accent)] text-[#062912]'
+                      : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
+                  }`}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+            {/* Sync status */}
+            <div className="flex items-center gap-2 text-xs text-[var(--color-muted)]">
+              <span className="h-2 w-2 rounded-full bg-[#22c55e]" />
+              Live
+              <span className="text-[var(--color-muted)]">·</span>
+              Synced 2m ago
+            </div>
+            {/* Sync button */}
+            <button className="hover-lift focus-ring flex items-center gap-2 rounded-full border border-[var(--color-line)] bg-white px-4 py-2 text-xs font-semibold text-[var(--color-text)] transition-all">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="23 4 23 10 17 10" />
+                <polyline points="1 20 1 14 7 14" />
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+              </svg>
+              Sync with Shopify
+            </button>
+          </div>
+        </div>
+
+        {/* 2. PRIMARY KPI STRIP */}
+        <div className="mb-7 grid grid-cols-5 gap-4">
+          {kpisToShow.map((kpi, i) => (
+            <Card key={i} className="relative overflow-hidden">
+              {i === 4 && (
+                <div className="absolute right-0 top-0 h-full w-1" style={{ background: T.alert }} />
+              )}
+              <div className="mb-3 flex items-start justify-between">
+                <span className="text-xs font-medium text-[var(--color-muted)]">{kpi.label}</span>
+                <span
+                  className="flex items-center gap-0.5 text-xs font-semibold"
+                  style={{ color: kpi.up !== false ? T.accent : T.alert }}
+                >
+                  {kpi.up !== false ? (
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <polyline points="18 15 12 9 6 15" />
+                    </svg>
+                  ) : (
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                  )}
+                  {kpi.change}
+                </span>
+              </div>
+              <div className="font-display text-2xl font-[700] tracking-[-0.04em] text-[var(--color-text)]" style={{ fontFamily: T.fontDisplay }}>
+                {kpi.value}
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        {/* 3. AI INSIGHTS PANEL */}
+        <div className="mb-7">
+          <Card elevated className="border-l-4" style={{ borderLeftColor: T.accent }}>
+            <div className="mb-4 flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg" style={{ background: T.accentSoft }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={T.accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 2a10 10 0 1 0 10 10" />
+                  <path d="M12 12l4-4" />
+                  <path d="M12 6v2" />
+                  <circle cx="12" cy="12" r="1" fill={T.accent} />
+                </svg>
+              </div>
+              <h2 className="font-display text-base font-[700] tracking-[-0.04em] text-[var(--color-text)]" style={{ fontFamily: T.fontDisplay }}>
+                AI Insights
+              </h2>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              {insightsToShow.map((insight, i) => (
+                <div key={i} className="rounded-[14px] border border-[var(--color-line)] p-4 transition-all hover:shadow-sm">
+                  <div className="mb-3 flex items-center justify-between">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg" style={{ background: insight.urgent ? T.alertSoft : 'rgba(18,21,31,0.05)' }}>
+                      {insight.icon === 'alert' && (
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={T.alert} strokeWidth="2.5">
+                          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                          <line x1="12" y1="9" x2="12" y2="13" />
+                          <line x1="12" y1="17" x2="12.01" y2="17" />
+                        </svg>
+                      )}
+                      {insight.icon === 'trend' && (
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={T.accent} strokeWidth="2.5">
+                          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                          <polyline points="17 6 23 6 23 12" />
+                        </svg>
+                      )}
+                      {insight.icon === 'warning' && (
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8b6cff" strokeWidth="2.5">
+                          <circle cx="12" cy="12" r="10" />
+                          <line x1="12" y1="8" x2="12" y2="12" />
+                          <line x1="12" y1="16" x2="12.01" y2="16" />
+                        </svg>
+                      )}
+                    </div>
+                    <span className="text-xs font-semibold text-[var(--color-muted)]">{insight.urgent ? 'Urgent' : 'Insight'}</span>
+                  </div>
+                  <div className="mb-2 font-medium text-[var(--color-text)] text-sm leading-snug">{insight.title}</div>
+                  <div className="mb-3 text-xs text-[var(--color-muted)]">{insight.desc}</div>
+                  <button className="text-xs font-semibold transition-colors hover:opacity-80" style={{ color: T.accent }}>
+                    {insight.cta} →
+                  </button>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
+
+        {/* 4. STOCK HEALTH */}
+        <div className="mb-7">
+          <h2 className="mb-4 font-display text-sm font-[700] uppercase tracking-[0.10em] text-[var(--color-muted)]" style={{ fontFamily: T.fontDisplay }}>
+            Stock Health
+          </h2>
+          <div className="grid grid-cols-5 gap-4">
+            {healthToShow.map((item, i) => (
+              <Card key={i} className="text-center">
+                <div className="mb-2 font-display text-[1.6rem] font-[700] tracking-[-0.04em]" style={{ fontFamily: T.fontDisplay, color: item.color }}>
+                  {item.value}
+                </div>
+                <div className="text-xs text-[var(--color-muted)]">{item.label}</div>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* 5 + 6: PRODUCT PERFORMANCE + RECENT ORDERS (2-col) */}
+        <div className="mb-7 grid grid-cols-2 gap-6">
+          {/* PRODUCT PERFORMANCE TABLE */}
+          <Card>
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="font-display text-sm font-[700] tracking-[-0.04em] text-[var(--color-text)]" style={{ fontFamily: T.fontDisplay }}>
+                Product Performance
+              </h2>
+              <div className="flex gap-1 rounded-full border border-[var(--color-line)] p-0.5">
+                {[['top_selling', 'Top Selling'], ['low_performing', 'Low Perf.']].map(([key, label]) => (
+                  <button
+                    key={key}
+                    onClick={() => setActiveTab(key)}
+                    className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${activeTab === key ? 'bg-[var(--color-text)] text-white' : 'text-[var(--color-muted)]'}`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-0">
+              {productsToShow.map((p, i) => {
+                const ps = productStatusConfig[p.status] || productStatusConfig.hot;
+                return (
+                  <div key={i} className="flex items-center justify-between border-b border-[rgba(18,21,31,0.04)] py-3 last:border-0 hover:bg-[rgba(18,21,31,0.01)] -mx-1 px-1 rounded-lg cursor-pointer transition-colors">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold" style={{ background: 'rgba(18,21,31,0.05)', color: T.muted }}>
+                        {p.name.charAt(0)}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm font-medium text-[var(--color-text)] truncate">{p.name}</div>
+                        <div className="text-xs text-[var(--color-muted)] truncate">{p.variant}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 ml-4">
+                      <div className="text-right hidden sm:block">
+                        <div className="text-xs text-[var(--color-muted)]">{p.sold} sold</div>
+                        <div className="text-xs font-medium" style={{ color: T.accent }}>+${p.profit}</div>
+                      </div>
+                      <span className="rounded-full px-2 py-0.5 text-xs font-medium shrink-0" style={{ background: ps.bg, color: ps.color }}>
+                        {ps.label}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+
+          {/* RECENT ORDERS TABLE */}
+          <Card>
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="font-display text-sm font-[700] tracking-[-0.04em] text-[var(--color-text)]" style={{ fontFamily: T.fontDisplay }}>
+                Recent Orders
+              </h2>
+              <button className="text-xs font-semibold transition-colors hover:opacity-80" style={{ color: T.accent }}>
+                View all →
+              </button>
+            </div>
+            <div className="space-y-0">
+              {(recentOrders || []).slice(0, 7).map((order, i) => {
+                const s = statusConfig[order.status] || statusConfig.delivered;
+                return (
+                  <div key={i} className="flex items-center justify-between border-b border-[rgba(18,21,31,0.04)] py-3 last:border-0 hover:bg-[rgba(18,21,31,0.01)] -mx-1 px-1 rounded-lg cursor-pointer transition-colors">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold" style={{ background: 'rgba(18,21,31,0.05)', color: T.muted }}>
+                        {(order.product || order.orderId || '#').charAt(0)}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm font-medium text-[var(--color-text)] truncate">{order.product || order.orderId}</div>
+                        <div className="text-xs text-[var(--color-muted)]">{order.orderId || order.date}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 ml-4">
+                      <div className="text-right hidden sm:block">
+                        <div className="text-xs font-medium text-[var(--color-text)]">{order.revenue}</div>
+                        <div className="text-xs font-medium" style={{ color: (typeof order.profit === 'number' ? order.profit >= 0 : true) ? T.accent : T.alert }}>
+                          {typeof order.profit === 'number' ? (order.profit >= 0 ? '+' : '') + '$' + order.profit.toFixed(0) : order.profit}
+                        </div>
+                      </div>
+                      <span className="rounded-full px-2 py-0.5 text-xs font-medium shrink-0" style={{ background: s.bg, color: s.color }}>
+                        {s.label}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+        </div>
+
+        {/* 7. FINANCIAL OVERVIEW + 8. QUICK ACTIONS */}
+        <div className="mb-7 grid grid-cols-3 gap-6">
+          {/* Revenue vs Profit Chart */}
+          <Card className="col-span-2">
+            <div className="mb-5 flex items-center justify-between">
+              <h2 className="font-display text-sm font-[700] tracking-[-0.04em] text-[var(--color-text)]" style={{ fontFamily: T.fontDisplay }}>
+                Revenue vs Profit
+              </h2>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1.5">
+                  <div className="h-2 w-2 rounded-full" style={{ background: T.accent }} />
+                  <span className="text-xs text-[var(--color-muted)]">Revenue</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="h-2 w-2 rounded-full" style={{ background: '#8b6cff' }} />
+                  <span className="text-xs text-[var(--color-muted)]">Profit</span>
+                </div>
+              </div>
+            </div>
+            {/* Bar chart — 7 days */}
+            <div className="flex items-end justify-between gap-2" style={{ height: '120px' }}>
+              {[
+                { label: 'Mon', rev: 620, profit: 180 },
+                { label: 'Tue', rev: 890, profit: 290 },
+                { label: 'Wed', rev: 740, profit: 220 },
+                { label: 'Thu', rev: 1100, profit: 360 },
+                { label: 'Fri', rev: 980, profit: 310 },
+                { label: 'Sat', rev: 520, profit: 150 },
+                { label: 'Sun', rev: 380, profit: 110 },
+              ].map((d, i) => (
+                <div key={i} className="flex flex-col items-center gap-2 flex-1">
+                  <div className="flex items-end gap-1 w-full justify-center" style={{ height: '90px' }}>
+                    <div className="w-4 rounded-t-sm transition-all hover:opacity-80" style={{ height: `${(d.rev / 1100) * 90}px`, background: T.accent }} />
+                    <div className="w-4 rounded-t-sm transition-all hover:opacity-80" style={{ height: `${(d.profit / 360) * 90}px`, background: '#8b6cff' }} />
+                  </div>
+                  <span className="text-xs text-[var(--color-muted)]">{d.label}</span>
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          {/* QUICK ACTIONS */}
+          <Card>
+            <h2 className="mb-4 font-display text-sm font-[700] tracking-[-0.04em] text-[var(--color-text)]" style={{ fontFamily: T.fontDisplay }}>
+              Quick Actions
+            </h2>
+            <div className="space-y-2">
+              {[
+                { label: 'Create Purchase Order', icon: 'plus' },
+                { label: 'Reorder Stock', icon: 'reorder' },
+                { label: 'View Inventory', icon: 'inventory' },
+                { label: 'Add Product', icon: 'plus' },
+              ].map((action, i) => (
+                <button key={i} className="hover-lift focus-ring flex w-full items-center gap-3 rounded-[14px] border border-[var(--color-line)] bg-white px-4 py-3 text-sm font-medium text-[var(--color-text)] transition-all">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg" style={{ background: i < 2 ? T.accentSoft : 'rgba(18,21,31,0.05)' }}>
+                    {action.icon === 'plus' && (
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={i < 2 ? T.accent : T.muted} strokeWidth="2.5">
+                        <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                    )}
+                    {action.icon === 'reorder' && (
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={T.accent} strokeWidth="2.5">
+                        <polyline points="17 1 21 5 17 9" /><path d="M3 11V9a4 4 0 0 1 4-4h14" />
+                      </svg>
+                    )}
+                    {action.icon === 'inventory' && (
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={T.muted} strokeWidth="2.5">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                      </svg>
+                    )}
+                  </div>
+                  {action.label}
+                </button>
+              ))}
+            </div>
+          </Card>
+        </div>
+
+        <div className="h-4" />
+      </main>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────
    STEP 1 — ENTRY SCREEN
    ───────────────────────────────────────────── */
 function EntryScreen({ onShopify, onGoogle }) {
@@ -1090,17 +1524,57 @@ export default function OnboardingFlow() {
       { orderId: '#BP-2839', product: 'Crossback Bra Top', variant: 'S / Sage', revenue: '$98.00', profit: 34.30, status: 'in_progress', stockRemaining: 1, date: 'Apr 21' },
       { orderId: '#BP-2838', product: 'Adventure Vest', variant: 'M / Slate', revenue: '$145.00', profit: 50.75, status: 'delivered', stockRemaining: 6, date: 'Apr 20' },
     ],
-    quickInsights: [
-      { label: 'Out of stock', value: '2 items', color: T.alert },
-      { label: 'Low in stock', value: '3 products', color: '#f59e0b' },
-      { label: 'Next stockout', value: '4 days', color: T.text },
+    blurredInsights: [
+      { label: 'Demand forecast', hint: 'Reorder in 3 days' },
+      { label: 'Reorder suggestions', hint: 'Suggested: 40 units' },
+      { label: 'Financial trends', hint: '+12% this month' },
     ],
     stockSnapshot: [
-      { label: 'Total units in stock', value: '847', color: T.text, icon: '◦' },
-      { label: 'Out of stock', value: '2', color: T.alert, icon: '◦' },
-      { label: 'At risk', value: '7', color: '#f59e0b', icon: '◦' },
+      { label: 'Total units in stock', value: '847', color: T.text },
+      { label: 'Out of stock', value: '2', color: T.alert },
+      { label: 'At risk', value: '7', color: '#f59e0b' },
     ],
     fullDashboardLocked: true,
+  };
+
+  const premiumStoreData = {
+    storeName: 'BluePeak Apparel',
+    kpis: [
+      { label: 'Revenue', value: '$4,218', change: '+12.4%', up: true },
+      { label: 'Profit', value: '$1,247', change: '+8.2%', up: true },
+      { label: 'Orders', value: '142', change: '+5.1%', up: true },
+      { label: 'Inventory Value', value: '$28,450', change: '-2.1%', up: false },
+      { label: 'Low Stock Items', value: '7', change: 'Critical', up: false },
+    ],
+    aiInsights: [
+      { icon: 'alert', title: '5 products will go out of stock in 3 days', desc: 'Black Hoodie, Performance Tee, and 3 more', cta: 'Reorder now', urgent: true },
+      { icon: 'trend', title: 'Reorder recommended for Linen Shirt', desc: 'Sales velocity up 34% this week', cta: 'View details', urgent: false },
+      { icon: 'warning', title: 'Overstock detected in 12 SKUs', desc: 'Consider discounting to free up capital', cta: 'Review items', urgent: false },
+    ],
+    stockHealth: [
+      { label: 'Total Units', value: '1,284', color: T.text },
+      { label: 'Out of Stock', value: '2', color: T.alert },
+      { label: 'Low Stock', value: '7', color: '#f59e0b' },
+      { label: 'Overstocked', value: '12', color: '#8b6cff' },
+      { label: 'Healthy Stock', value: '89%', color: T.accent },
+    ],
+    topProducts: [
+      { name: 'Linen Summer Shirt', variant: 'EU 40 / White', sold: 24, revenue: '$1,842', profit: 498, status: 'hot' },
+      { name: 'Hoodie Classic White', variant: 'L / True White', sold: 18, revenue: '$1,296', profit: 412, status: 'hot' },
+      { name: 'Performance Tee', variant: 'XL / Graphite', sold: 12, revenue: '$432', profit: 142, status: 'slow' },
+      { name: 'Crossback Bra Top', variant: 'S / Sage', sold: 9, revenue: '$486', profit: 168, status: 'slow' },
+      { name: 'Adventure Vest', variant: 'M / Slate', sold: 3, revenue: '$195', profit: 52, status: 'dead' },
+    ],
+    recentOrders: [
+      { orderId: '#BP-2910', product: 'Linen Summer Shirt', variant: 'EU 40 / White', revenue: '$142.50', profit: 38.20, status: 'delivered', date: 'Apr 30' },
+      { orderId: '#BP-2909', product: 'Hoodie Classic White', variant: 'L / True White', revenue: '$204.00', profit: 72.80, status: 'delivered', date: 'Apr 30' },
+      { orderId: '#BP-2908', product: 'Performance Tee', variant: 'XL / Graphite', revenue: '$132.00', profit: 44.00, status: 'in_progress', date: 'Apr 29' },
+      { orderId: '#BP-2907', product: 'Wren Jacket Olive', variant: 'M / Olive Drab', revenue: '$176.00', profit: 61.20, status: 'delivered', date: 'Apr 29' },
+      { orderId: '#BP-2906', product: 'Trail Shorts Khaki', variant: 'US 34 / Khaki', revenue: '$118.00', profit: 29.50, status: 'in_progress', date: 'Apr 28' },
+      { orderId: '#BP-2905', product: 'Crossback Bra Top', variant: 'S / Sage', revenue: '$98.00', profit: 34.30, status: 'delivered', date: 'Apr 28' },
+      { orderId: '#BP-2904', product: 'Adventure Vest', variant: 'M / Slate', revenue: '$145.00', profit: 50.75, status: 'delivered', date: 'Apr 27' },
+    ],
+    fullDashboardLocked: false,
   };
 
   const handleShopifyConnect = async () => {
@@ -1153,7 +1627,11 @@ export default function OnboardingFlow() {
         <LoadingScreen onComplete={handleLoadingComplete} />
       )}
       {step === 'dashboard' && storeData && (
-        <FreeDashboard storeData={storeData} onUpgrade={handleUpgrade} />
+        storeData.fullDashboardLocked === false ? (
+          <PremiumDashboard storeData={storeData} />
+        ) : (
+          <FreeDashboard storeData={storeData} onUpgrade={handleUpgrade} />
+        )
       )}
       {step === 'profile' && (
         <ProfileSetupScreen
