@@ -604,57 +604,86 @@ function FreeDashboard({ storeData, onUpgrade }) {
           ))}
         </div>
 
-        {/* ── SECTION 2: RECENT ORDERS (rich product rows) ── */}
+        {/* ── SECTION 2: RECENT ORDERS (clean table) ── */}
         <div className="mb-6">
-          <h3 className="mb-4 font-display text-base font-[700] tracking-[-0.04em] text-[var(--color-text)]" style={{ fontFamily: T.fontDisplay }}>
-            Recent orders
-          </h3>
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="font-display text-base font-[700] tracking-[-0.04em] text-[var(--color-text)]" style={{ fontFamily: T.fontDisplay }}>
+              Recent orders
+            </h3>
+            <span className="text-xs text-[var(--color-muted)]">Last 10 orders</span>
+          </div>
           <div className="overflow-hidden rounded-[20px] border border-[var(--color-line)] bg-white shadow-sm">
-            {recentOrders.map((order, i) => (
-              <div
-                key={i}
-                className={`flex items-center justify-between border-b border-[rgba(18,21,31,0.04)] px-5 py-4 last:border-0`}
-              >
-                <div className="flex items-center gap-4">
-                  {/* Product initial */}
-                  <div
-                    className="flex h-10 w-10 items-center justify-center rounded-xl text-sm font-bold"
-                    style={{ background: 'rgba(18,21,31,0.04)', color: T.muted }}
-                  >
-                    {order.product.charAt(0)}
+            {/* Table Header */}
+            <div
+              className="flex items-center px-5 py-3 border-b border-[var(--color-line)]"
+              style={{ background: 'rgba(18,21,31,0.02)' }}
+            >
+              <div className="w-[100px] text-xs font-semibold uppercase tracking-[0.10em] text-[var(--color-muted)]">Order ID</div>
+              <div className="flex-1 text-xs font-semibold uppercase tracking-[0.10em] text-[var(--color-muted)]">Product</div>
+              <div className="w-[90px] text-right text-xs font-semibold uppercase tracking-[0.10em] text-[var(--color-muted)]">Revenue</div>
+              <div className="w-[90px] text-right text-xs font-semibold uppercase tracking-[0.10em] text-[var(--color-muted)]">Profit</div>
+              <div className="w-[100px] text-center text-xs font-semibold uppercase tracking-[0.10em] text-[var(--color-muted)]">Status</div>
+              <div className="w-[120px] text-right text-xs font-semibold uppercase tracking-[0.10em] text-[var(--color-muted)]">Stock</div>
+              <div className="w-[70px] text-right text-xs font-semibold uppercase tracking-[0.10em] text-[var(--color-muted)]">Date</div>
+            </div>
+            {/* Table Rows */}
+            {recentOrders.map((order, i) => {
+              const statusConfig = {
+                delivered: { label: 'Delivered', bg: T.accentSoft, color: T.accent },
+                in_progress: { label: 'In Progress', bg: 'rgba(245,158,11,0.12)', color: '#f59e0b' },
+                cancelled: { label: 'Cancelled', bg: T.alertSoft, color: T.alert },
+              };
+              const status = statusConfig[order.status] || statusConfig.delivered;
+              const isProfitable = order.profit >= 0;
+              return (
+                <div
+                  key={i}
+                  className="flex items-center border-b border-[rgba(18,21,31,0.04)] px-5 py-3.5 transition-colors hover:bg-[rgba(18,21,31,0.01)] last:border-0"
+                >
+                  <div className="w-[100px] font-mono text-xs font-medium text-[var(--color-muted)]">{order.orderId}</div>
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-[var(--color-text)]">{order.product}</div>
+                    <div className="text-xs text-[var(--color-muted)]">{order.variant}</div>
                   </div>
-                  <div>
-                    <div className="font-medium text-[var(--color-text)]">{order.product}</div>
-                    <div className="mt-0.5 flex items-center gap-2 text-xs text-[var(--color-muted)]">
-                      <span>{order.variant}</span>
-                      <span>•</span>
-                      <span>{order.qty} units</span>
-                      <span>•</span>
-                      <span>{order.location}</span>
-                    </div>
+                  <div className="w-[90px] text-right text-sm font-medium text-[var(--color-text)]">{order.revenue}</div>
+                  <div className="w-[90px] text-right text-sm font-medium" style={{ color: isProfitable ? T.accent : T.alert }}>
+                    {isProfitable ? '+' : ''}{order.profit >= 0 ? '$' : '-$'}{Math.abs(order.profit).toFixed(2)}
                   </div>
-                </div>
-                <div className="flex items-center gap-6">
-                  {/* Revenue */}
-                  <div className="text-right">
-                    <div className="text-xs text-[var(--color-muted)]">Revenue</div>
-                    <div className="font-medium text-[var(--color-text)]">{order.revenue}</div>
-                  </div>
-                  {/* Profit */}
-                  <div className="text-right">
-                    <div className="text-xs text-[var(--color-muted)]">Profit</div>
-                    <div className="font-medium" style={{ color: T.accent }}>{order.profit}</div>
-                  </div>
-                  {/* Status + remaining */}
-                  <div className="flex items-center gap-3">
-                    <span className="rounded-full px-2.5 py-1 text-xs font-medium" style={{ background: T.accentSoft, color: T.accent }}>
-                      {order.status}
+                  <div className="w-[100px] flex justify-center">
+                    <span
+                      className="rounded-full px-2.5 py-1 text-xs font-medium"
+                      style={{ background: status.bg, color: status.color }}
+                    >
+                      {status.label}
                     </span>
-                    <span className="text-xs text-[var(--color-muted)]">{order.remaining} left</span>
                   </div>
+                  <div className="w-[120px] text-right text-xs text-[var(--color-muted)]">
+                    <span className={order.stockRemaining <= 3 ? 'font-semibold' : ''} style={order.stockRemaining <= 3 ? { color: T.alert } : {}}>
+                      {order.stockRemaining} units
+                    </span>
+                  </div>
+                  <div className="w-[70px] text-right text-xs text-[var(--color-muted)]">{order.date}</div>
                 </div>
+              );
+            })}
+            {/* Blur overlay + CTA */}
+            <div className="relative">
+              <div
+                className="flex items-center justify-between px-5 py-4"
+                style={{
+                  background: 'linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.95) 40%)',
+                }}
+              >
+                <div />
+                <button
+                  onClick={onUpgrade}
+                  className="hover-lift focus-ring rounded-full px-5 py-2.5 text-sm font-semibold text-[var(--color-text)] transition-all"
+                  style={{ background: 'rgba(18,21,31,0.04)' }}
+                >
+                  Set up full dashboard
+                </button>
               </div>
-            ))}
+            </div>
           </div>
         </div>
 
@@ -1050,16 +1079,16 @@ export default function OnboardingFlow() {
   const freeStoreData = {
     storeName: 'BluePeak Apparel',
     recentOrders: [
-      { product: 'Linen Summer Shirt', variant: 'EU 40 / White', qty: 2, location: 'Berlin WH', revenue: '$142.50', profit: '+$38.20', status: 'Fulfilled', remaining: '14' },
-      { product: 'Hydration Pack', variant: '2L / Navy', qty: 1, location: 'Amsterdam DC', revenue: '$89.00', profit: '+$22.40', status: 'Fulfilled', remaining: '7' },
-      { product: 'Cargo Shorts Navy', variant: 'US 32', qty: 2, location: 'Berlin WH', revenue: '$198.00', profit: '+$54.60', status: 'Processing', remaining: '3' },
-      { product: 'Wren Jacket Olive', variant: 'M / Olive Drab', qty: 1, location: 'Berlin WH', revenue: '$176.00', profit: '+$61.20', status: 'Fulfilled', remaining: '2' },
-      { product: 'Hoodie Classic White', variant: 'L / True White', qty: 3, location: 'Amsterdam DC', revenue: '$204.00', profit: '+$72.80', status: 'Fulfilled', remaining: '18' },
-      { product: 'Performance Tee', variant: 'XL / Graphite', qty: 4, location: 'Berlin WH', revenue: '$132.00', profit: '+$44.00', status: 'Fulfilled', remaining: '5' },
-      { product: 'Trail Shorts Khaki', variant: 'US 34 / Khaki', qty: 2, location: 'Berlin WH', revenue: '$118.00', profit: '+$29.50', status: 'Processing', remaining: '9' },
-      { product: 'Linen Summer Shirt', variant: 'EU 42 / Blue', qty: 1, location: 'Amsterdam DC', revenue: '$71.25', profit: '+$19.10', status: 'Fulfilled', remaining: '14' },
-      { product: 'Crossback Bra Top', variant: 'S / Sage', qty: 2, location: 'Berlin WH', revenue: '$98.00', profit: '+$34.30', status: 'Fulfilled', remaining: '1' },
-      { product: 'Adventure Vest', variant: 'M / Slate', qty: 1, location: 'Amsterdam DC', revenue: '$145.00', profit: '+$50.75', status: 'Fulfilled', remaining: '6' },
+      { orderId: '#BP-2847', product: 'Linen Summer Shirt', variant: 'EU 40 / White', revenue: '$142.50', profit: 38.20, status: 'delivered', stockRemaining: 14, date: 'Apr 28' },
+      { orderId: '#BP-2846', product: 'Hydration Pack', variant: '2L / Navy', revenue: '$89.00', profit: 22.40, status: 'in_progress', stockRemaining: 7, date: 'Apr 28' },
+      { orderId: '#BP-2845', product: 'Cargo Shorts Navy', variant: 'US 32', revenue: '$198.00', profit: -12.50, status: 'cancelled', stockRemaining: 3, date: 'Apr 27' },
+      { orderId: '#BP-2844', product: 'Wren Jacket Olive', variant: 'M / Olive Drab', revenue: '$176.00', profit: 61.20, status: 'delivered', stockRemaining: 2, date: 'Apr 26' },
+      { orderId: '#BP-2843', product: 'Hoodie Classic White', variant: 'L / True White', revenue: '$204.00', profit: 72.80, status: 'delivered', stockRemaining: 18, date: 'Apr 25' },
+      { orderId: '#BP-2842', product: 'Performance Tee', variant: 'XL / Graphite', revenue: '$132.00', profit: 44.00, status: 'in_progress', stockRemaining: 5, date: 'Apr 24' },
+      { orderId: '#BP-2841', product: 'Trail Shorts Khaki', variant: 'US 34 / Khaki', revenue: '$118.00', profit: 29.50, status: 'delivered', stockRemaining: 9, date: 'Apr 23' },
+      { orderId: '#BP-2840', product: 'Linen Summer Shirt', variant: 'EU 42 / Blue', revenue: '$71.25', profit: 19.10, status: 'delivered', stockRemaining: 14, date: 'Apr 22' },
+      { orderId: '#BP-2839', product: 'Crossback Bra Top', variant: 'S / Sage', revenue: '$98.00', profit: 34.30, status: 'in_progress', stockRemaining: 1, date: 'Apr 21' },
+      { orderId: '#BP-2838', product: 'Adventure Vest', variant: 'M / Slate', revenue: '$145.00', profit: 50.75, status: 'delivered', stockRemaining: 6, date: 'Apr 20' },
     ],
     quickInsights: [
       { label: 'Out of stock', value: '2 items', color: T.alert },
