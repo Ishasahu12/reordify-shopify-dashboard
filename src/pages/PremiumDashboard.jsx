@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const T = {
   accent: '#07D568',
@@ -16,12 +17,14 @@ const T = {
   blueSoft: 'rgba(59,130,246,0.08)',
   blue: '#3b82f6',
   blueMid: 'rgba(59,130,246,0.50)',
+  blueLight: 'rgba(59,130,246,0.15)',
   amberSoft: 'rgba(245,158,11,0.08)',
   amber: '#f59e0b',
   purpleSoft: 'rgba(139,92,246,0.08)',
   purple: '#8b6cff',
   graySoft: 'rgba(18,21,31,0.04)',
   greenSoft: 'rgba(7,213,104,0.10)',
+  greenLight: 'rgba(7,213,104,0.15)',
 };
 
 function NavIcon({ type, size = 18, color = 'currentColor' }) {
@@ -114,15 +117,27 @@ const premiumData = {
   ],
 };
 
-const chartData = [
-  { label: 'Mon', sales: 620, purchases: 380 },
-  { label: 'Tue', sales: 890, purchases: 520 },
-  { label: 'Wed', sales: 740, purchases: 460 },
-  { label: 'Thu', sales: 1100, purchases: 680 },
-  { label: 'Fri', sales: 980, purchases: 590 },
-  { label: 'Sat', sales: 520, purchases: 310 },
-  { label: 'Sun', sales: 380, purchases: 240 },
+const chartData7d = [
+  { label: 'Apr 21', sales: 620, purchases: 380 },
+  { label: 'Apr 22', sales: 890, purchases: 520 },
+  { label: 'Apr 23', sales: 740, purchases: 460 },
+  { label: 'Apr 24', sales: 1100, purchases: 680 },
+  { label: 'Apr 25', sales: 980, purchases: 590 },
+  { label: 'Apr 26', sales: 520, purchases: 310 },
+  { label: 'Apr 27', sales: 380, purchases: 240 },
 ];
+
+const chartData30d = Array.from({ length: 30 }, (_, i) => ({
+  label: `Day ${i + 1}`,
+  sales: 600 + Math.sin(i * 0.3) * 200 + Math.random() * 150,
+  purchases: 350 + Math.sin(i * 0.2) * 100 + Math.random() * 80,
+}));
+
+const chartData90d = Array.from({ length: 90 }, (_, i) => ({
+  label: i % 7 === 0 ? `Week ${Math.floor(i / 7) + 1}` : '',
+  sales: 550 + Math.sin(i * 0.15) * 250 + Math.random() * 180,
+  purchases: 300 + Math.cos(i * 0.12) * 120 + Math.random() * 100,
+}));
 
 const paymentsData = [
   { label: 'Mon', received: 580, sent: 320 },
@@ -134,14 +149,155 @@ const paymentsData = [
   { label: 'Sun', received: 350, sent: 210 },
 ];
 
-const maxSales = Math.max(...chartData.map(d => d.sales));
 const maxPayments = Math.max(...paymentsData.map(d => d.received));
 
-export default function PremiumDashboard() {
+export default function PremiumDashboardContent() {
   const { storeName, kpis, aiInsights, stockHealth, topSelling, lowPerforming, recentOrders } = premiumData;
   const [activeTab, setActiveTab] = useState('top_selling');
   const [dateRange, setDateRange] = useState('7d');
-  const dateRanges = ['Today', '7d', '30d', '90d'];
+  const [toggleView, setToggleView] = useState('revenue');
+  const dateRanges = ['7d', '30d', '90d'];
+
+  const getChartData = () => {
+    if (dateRange === '7d') return chartData7d;
+    if (dateRange === '30d') return chartData30d;
+    return chartData90d;
+  };
+
+  const currentData = getChartData();
+  const maxVal = Math.max(...currentData.map(d => d.sales));
+
+  const renderSalesGraph = () => {
+    if (dateRange === '7d') {
+      return (
+        <div className="relative" style={{ height: '200px' }}>
+          <div className="absolute inset-0 flex flex-col justify-between">
+            {[0, 1, 2, 3, 4].map(i => (
+              <div key={i} className="border-b border-[rgba(18,21,31,0.04)] w-full" style={{ height: '20%' }} />
+            ))}
+          </div>
+          <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-between text-[10px] text-[var(--color-muted)] pr-3">
+            <span>$1.2k</span>
+            <span>$600</span>
+            <span>$0</span>
+          </div>
+          <div className="absolute left-12 right-2 bottom-6 flex items-end justify-between gap-1.5 px-1">
+            {chartData7d.map((d, i) => {
+              const salesH = (d.sales / maxVal) * 140;
+              const purchH = (d.purchases / maxVal) * 140;
+              return (
+                <div key={i} className="flex items-end justify-center gap-0.5 flex-1">
+                  <div className="w-4 rounded-t-sm" style={{ height: `${salesH}px`, background: T.accent }} />
+                  <div className="w-4 rounded-t-sm" style={{ height: `${purchH}px`, background: T.blue }} />
+                </div>
+              );
+            })}
+          </div>
+          <div className="absolute left-12 right-2 bottom-0 flex justify-between text-[10px] text-[var(--color-muted)] px-1">
+            {chartData7d.map((d, i) => <span key={i}>{d.label.split(' ')[1]}</span>)}
+          </div>
+        </div>
+      );
+    }
+
+    if (dateRange === '30d') {
+      return (
+        <div className="relative" style={{ height: '200px' }}>
+          <div className="absolute inset-0 flex flex-col justify-between">
+            {[0, 1, 2, 3, 4].map(i => (
+              <div key={i} className="border-b border-[rgba(18,21,31,0.04)] w-full" style={{ height: '20%' }} />
+            ))}
+          </div>
+          <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-between text-[10px] text-[var(--color-muted)] pr-3">
+            <span>$1.2k</span>
+            <span>$600</span>
+            <span>$0</span>
+          </div>
+          <div className="absolute left-12 right-2 bottom-6">
+            <svg className="w-full" viewBox="0 0 700 160" preserveAspectRatio="none" style={{ height: '160px' }}>
+              <defs>
+                <linearGradient id="purchasesGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={T.blue} stopOpacity="0.25" />
+                  <stop offset="100%" stopColor={T.blue} stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              <path
+                d={`M 0 160 L ${chartData30d.map((v, i) => `${i * (700 / 29)},${160 - (v.purchases / maxVal) * 140}`).join(' L ')} L 700 160 Z`}
+                fill="url(#purchasesGrad)"
+              />
+              <path
+                d={`M 0 160 L ${chartData30d.map((v, i) => `${i * (700 / 29)},${160 - (v.purchases / maxVal) * 140}`).join(' L ')}`}
+                fill="none"
+                stroke={T.blue}
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+              <path
+                d={`M ${chartData30d.map((v, i) => `${i * (700 / 29)},${160 - (v.sales / maxVal) * 140}`).join(' L ')}`}
+                fill="none"
+                stroke={T.accent}
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+          <div className="absolute left-12 right-2 bottom-0 flex justify-between text-[10px] text-[var(--color-muted)]">
+            <span>Day 1</span>
+            <span>Day 10</span>
+            <span>Day 20</span>
+            <span>Day 30</span>
+          </div>
+        </div>
+      );
+    }
+
+    // 90d view
+    return (
+      <div className="relative" style={{ height: '200px' }}>
+        <div className="absolute inset-0 flex flex-col justify-between">
+          {[0, 1, 2, 3, 4].map(i => (
+            <div key={i} className="border-b border-[rgba(18,21,31,0.04)] w-full" style={{ height: '20%' }} />
+          ))}
+        </div>
+        <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-between text-[10px] text-[var(--color-muted)] pr-3">
+          <span>$1.2k</span>
+          <span>$600</span>
+          <span>$0</span>
+        </div>
+        <div className="absolute left-12 right-2 bottom-6">
+          <svg className="w-full" viewBox="0 0 700 160" preserveAspectRatio="none" style={{ height: '160px' }}>
+            <path
+              d={`M ${chartData90d.map((v, i) => `${i * (700 / 89)},${160 - (v.purchases / maxVal) * 140}`).join(' L ')}`}
+              fill="none"
+              stroke={T.blue}
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+            <path
+              d={`M ${chartData90d.map((v, i) => `${i * (700 / 89)},${160 - (v.sales / maxVal) * 140}`).join(' L ')}`}
+              fill="none"
+              stroke={T.accent}
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+          </svg>
+        </div>
+        <div className="absolute left-12 right-2 bottom-0 flex justify-between text-[10px] text-[var(--color-muted)]">
+          <span>Week 1</span>
+          <span>Week 4</span>
+          <span>Week 7</span>
+          <span>Week 10</span>
+        </div>
+      </div>
+    );
+  };
+
+  const salesInsight = dateRange === '7d'
+    ? 'Sales consistently outperform purchases, indicating healthy retail activity'
+    : dateRange === '30d'
+    ? 'Sales trend remains strong with mid-month purchase restocking'
+    : 'Sales maintain steady growth over the quarter';
 
   const statusConfig = {
     delivered: { label: 'Delivered', bg: T.accentSoft, color: T.accent },
@@ -154,60 +310,12 @@ export default function PremiumDashboard() {
     dead: { label: 'Dead', bg: T.alertSoft, color: T.alert },
   };
 
-  const navItems = [
-    { label: 'Dashboard', icon: 'dashboard', state: 'active', to: '/dashboard/premium' },
-    { label: 'Inventory', icon: 'inventory', state: 'unlocked', to: '/dashboard/inventory' },
-    { label: 'Reorder', icon: 'reorder', state: 'unlocked' },
-    { label: 'Purchase Orders', icon: 'purchaseOrders', state: 'unlocked' },
-    { label: 'Analytics', icon: 'analytics', state: 'unlocked' },
-    { label: 'Settings', icon: 'settings', state: 'unlocked' },
-  ];
-
   const productData = activeTab === 'top_selling' ? topSelling : lowPerforming;
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[rgba(18,21,31,0.02)]">
-      {/* SIDEBAR - fixed */}
-      <aside className="flex w-[240px] shrink-0 flex-col border-r border-[var(--color-line)] bg-white">
-        <div className="px-6 py-7">
-          <div className="flex items-center gap-2">
-            <img src="/logo.jpeg" alt="Reordify" className="h-8 w-auto object-contain" />
-          </div>
-        </div>
-        <nav className="flex flex-col gap-0.5 px-3">
-          {navItems.map((item) => (
-            <Link
-              key={item.label}
-              to={item.to || '#'}
-              className={`flex items-center gap-3 rounded-[12px] px-3 py-2.5 text-sm font-medium transition-all ${
-                item.state === 'active'
-                  ? 'bg-[var(--color-accent-soft)] text-[var(--color-text)]'
-                  : 'text-[var(--color-muted)] hover:bg-[rgba(18,21,31,0.03)] hover:text-[var(--color-text)] cursor-pointer'
-              }`}
-            >
-              <span className="flex h-5 w-5 items-center justify-center">
-                <NavIcon type={item.icon} size={18} color={item.state === 'active' ? T.accent : T.muted} />
-              </span>
-              <span className="flex-1">{item.label}</span>
-              {item.state === 'active' && <span className="h-1.5 w-1.5 rounded-full" style={{ background: T.accent }} />}
-            </Link>
-          ))}
-        </nav>
-        <div className="mt-auto mx-3 mb-6 rounded-[12px] border border-[rgba(7,213,104,0.20)] p-3" style={{ background: T.accentSoft }}>
-          <div className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded-full" style={{ background: T.accent }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#062912" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
-            </div>
-            <span className="text-xs font-semibold" style={{ color: T.accentDark }}>Pro Plan Active</span>
-          </div>
-        </div>
-      </aside>
-
-      {/* MAIN CONTENT - scrollable */}
-      <main className="flex-1 overflow-y-auto px-8 py-7">
-
-        {/* HEADER */}
-        <div className="mb-8 flex items-center justify-between">
+    <div className="px-8 py-7">
+      {/* HEADER */}
+      <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="font-display text-[1.5rem] font-[700] tracking-[-0.03em] text-[var(--color-text)]" style={{ fontFamily: T.fontDisplay }}>Welcome back, {storeName}</h1>
           </div>
@@ -300,42 +408,38 @@ export default function PremiumDashboard() {
         {/* PRIMARY CHART - SALES VS PURCHASES */}
         <div className="mb-6">
           <Card style={{ padding: '24px' }}>
-            <div className="mb-5">
-              <h2 className="font-display text-sm font-[700] tracking-[-0.02em] text-[var(--color-text)] mb-4" style={{ fontFamily: T.fontDisplay }}>Sales vs Purchases</h2>
-              <div className="flex items-center gap-6">
-                <div className="flex items-center gap-2"><div className="h-2.5 w-4 rounded-sm" style={{ background: T.blue }} /><span className="text-[11px] text-[var(--color-muted)]">Sales</span></div>
-                <div className="flex items-center gap-2"><div className="h-2.5 w-4 rounded-sm" style={{ background: T.purple }} /><span className="text-[11px] text-[var(--color-muted)]">Purchases</span></div>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="font-display text-sm font-[700] tracking-[-0.02em] text-[var(--color-text)] mb-1" style={{ fontFamily: T.fontDisplay }}>Sales vs Purchases</h2>
+                <p className="text-[11px] text-[var(--color-muted)]">{salesInsight}</p>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <div className="h-2.5 w-4 rounded-sm" style={{ background: T.accent }} />
+                    <span className="text-[10px] text-[var(--color-muted)]">Sales</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="h-2.5 w-4 rounded-sm" style={{ background: T.blue }} />
+                    <span className="text-[10px] text-[var(--color-muted)]">Purchases</span>
+                  </div>
+                </div>
+                <div className="flex rounded-full border border-[var(--color-line)] p-0.5">
+                  {['7d', '30d', '90d'].map(range => (
+                    <button
+                      key={range}
+                      onClick={() => setDateRange(range)}
+                      className={`rounded-full px-3 py-1.5 text-[10px] font-medium transition-all ${
+                        dateRange === range ? 'bg-[var(--color-text)] text-white' : 'text-[var(--color-muted)]'
+                      }`}
+                    >
+                      {range}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
-            <div className="relative" style={{ height: '280px' }}>
-              <div className="absolute inset-0 flex flex-col justify-between">
-                {[0, 1, 2, 3, 4].map((i) => (
-                  <div key={i} className="border-b border-[rgba(18,21,31,0.04)] w-full" style={{ height: '20%' }} />
-                ))}
-              </div>
-              <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-between text-[10px] text-[var(--color-muted)] pr-3">
-                <span>$1.2k</span>
-                <span>$900</span>
-                <span>$600</span>
-                <span>$300</span>
-                <span>$0</span>
-              </div>
-              <div className="absolute left-12 right-0 top-0 bottom-0 flex items-end justify-between gap-2">
-                {chartData.map((d, i) => {
-                  const salesH = (d.sales / maxSales) * 220;
-                  const purchasesH = (d.purchases / maxSales) * 220;
-                  return (
-                    <div key={i} className="flex flex-col items-center gap-2 flex-1">
-                      <div className="flex items-end justify-center gap-1.5 w-full" style={{ height: '220px' }}>
-                        <div className="w-3 rounded-t-sm" style={{ height: `${salesH}px`, background: T.blue }} />
-                        <div className="w-3 rounded-t-sm" style={{ height: `${purchasesH}px`, background: T.purple }} />
-                      </div>
-                      <span className="text-[10px] text-[var(--color-muted)]">{d.label}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+            {renderSalesGraph()}
           </Card>
         </div>
 
@@ -346,36 +450,70 @@ export default function PremiumDashboard() {
             <div className="mb-5">
               <h2 className="font-display text-sm font-[700] tracking-[-0.02em] text-[var(--color-text)] mb-4" style={{ fontFamily: T.fontDisplay }}>Payments Flow</h2>
               <div className="flex items-center gap-6">
-                <div className="flex items-center gap-2"><div className="h-2.5 w-4 rounded-sm" style={{ background: T.accent }} /><span className="text-[11px] text-[var(--color-muted)]">Received</span></div>
-                <div className="flex items-center gap-2"><div className="h-2.5 w-4 rounded-sm" style={{ background: T.alert }} /><span className="text-[11px] text-[var(--color-muted)]">Sent</span></div>
+                <div className="flex items-center gap-2"><div className="h-2.5 w-4 rounded-sm" style={{ background: 'rgba(7,213,104,0.4)' }} /><span className="text-[11px] text-[var(--color-muted)]">Received</span></div>
+                <div className="flex items-center gap-2"><div className="h-2.5 w-4 rounded-sm" style={{ background: 'rgba(229,72,77,0.4)' }} /><span className="text-[11px] text-[var(--color-muted)]">Sent</span></div>
               </div>
             </div>
             <div className="relative" style={{ height: '180px' }}>
+              {/* Grid lines */}
               <div className="absolute inset-0 flex flex-col justify-between">
                 {[0, 1, 2, 3].map((i) => (
                   <div key={i} className="border-b border-[rgba(18,21,31,0.04)] w-full" style={{ height: '25%' }} />
                 ))}
               </div>
+              {/* Y-axis labels */}
               <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-between text-[10px] text-[var(--color-muted)] pr-3">
                 <span>$1k</span>
                 <span>$750</span>
                 <span>$500</span>
                 <span>$0</span>
               </div>
-              <div className="absolute left-12 right-0 top-0 bottom-0 flex items-end justify-between gap-2">
-                {paymentsData.map((d, i) => {
-                  const receivedH = (d.received / maxPayments) * 140;
-                  const sentH = (d.sent / maxPayments) * 140;
-                  return (
-                    <div key={i} className="flex flex-col items-center gap-2 flex-1">
-                      <div className="flex items-end justify-center gap-1.5 w-full" style={{ height: '140px' }}>
-                        <div className="w-3 rounded-t-sm" style={{ height: `${receivedH}px`, background: T.accent }} />
-                        <div className="w-3 rounded-t-sm" style={{ height: `${sentH}px`, background: T.alert }} />
-                      </div>
-                      <span className="text-[10px] text-[var(--color-muted)]">{d.label}</span>
-                    </div>
-                  );
-                })}
+              {/* SVG Line Chart */}
+              <svg className="absolute left-12 right-0 top-0 bottom-4" viewBox={`0 0 700 140`} preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="receivedGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="rgba(7,213,104,0.3)" />
+                    <stop offset="100%" stopColor="rgba(7,213,104,0)" />
+                  </linearGradient>
+                  <linearGradient id="sentGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="rgba(229,72,77,0.2)" />
+                    <stop offset="100%" stopColor="rgba(229,72,77,0)" />
+                  </linearGradient>
+                </defs>
+                {/* Received area */}
+                <path
+                  d={`M 0 140 L ${paymentsData.map((d, i) => `${i * 100},${140 - (d.received / maxPayments) * 110}`).join(' L ')} L 700 140 Z`}
+                  fill="url(#receivedGrad)"
+                />
+                {/* Sent area */}
+                <path
+                  d={`M 0 140 L ${paymentsData.map((d, i) => `${i * 100},${140 - (d.sent / maxPayments) * 110}`).join(' L ')} L 700 140 Z`}
+                  fill="url(#sentGrad)"
+                />
+                {/* Received line */}
+                <path
+                  d={`M ${paymentsData.map((d, i) => `${i * 100},${140 - (d.received / maxPayments) * 110}`).join(' L ')}`}
+                  fill="none"
+                  stroke="rgba(7,213,104,0.7)"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                {/* Sent line */}
+                <path
+                  d={`M ${paymentsData.map((d, i) => `${i * 100},${140 - (d.sent / maxPayments) * 110}`).join(' L ')}`}
+                  fill="none"
+                  stroke="rgba(229,72,77,0.7)"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              {/* X-axis labels */}
+              <div className="absolute left-12 right-0 bottom-0 flex justify-between text-[10px] text-[var(--color-muted)]">
+                {paymentsData.map((d, i) => (
+                  <span key={i}>{d.label}</span>
+                ))}
               </div>
             </div>
           </Card>
@@ -520,7 +658,6 @@ export default function PremiumDashboard() {
         </div>
 
         <div className="h-4" />
-      </main>
-    </div>
+      </div>
   );
 }
